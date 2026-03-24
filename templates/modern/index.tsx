@@ -30,19 +30,20 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
         fontSize: '10.5pt',
         lineHeight: '1.55',
         color: '#2d3748',
-        background: '#ffffff',
+        // Gradient creates the two-tone background on EVERY page —
+        // fixes the "sidebar disappears on page 2" problem completely.
+        background: 'linear-gradient(to right, #1e3a5f 38%, #ffffff 38%)',
         width: '210mm',
         minHeight: '297mm',
         boxSizing: 'border-box',
-        margin: '0 auto',
         display: 'flex',
+        alignItems: 'stretch',
       }}
     >
-      {/* Left sidebar */}
+      {/* Left sidebar — background is transparent, parent gradient handles color */}
       <div style={{
         width: '38%',
-        background: '#1e3a5f',
-        padding: '20px 16px',
+        padding: '24px 18px',
         color: '#e2e8f0',
         flexShrink: 0,
       }}>
@@ -132,7 +133,7 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, padding: '20px 18px' }}>
+      <div style={{ flex: 1, padding: '24px 20px', background: '#ffffff' }}>
         {/* Summary */}
         {data.summary && (
           <MainSection title="Profile">
@@ -144,7 +145,7 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
         {data.experience.length > 0 && (
           <MainSection title="Experience">
             {data.experience.map((exp, i) => (
-              <div key={i} style={{ marginBottom: i < data.experience.length - 1 ? '14px' : 0 }}>
+              <div key={i} style={{ marginBottom: i < data.experience.length - 1 ? '14px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                   <strong style={{ fontSize: '11pt', color: '#1e3a5f' }}>
                     <T value={exp.role} path={`experience~~${i}~~role`} />
@@ -163,7 +164,7 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
                 <p style={{ fontSize: '9.5pt', color: '#718096', margin: '2px 0 6px 0' }}>
                   <T value={exp.company} path={`experience~~${i}~~company`} />
                 </p>
-                <ul style={{ margin: 0, paddingLeft: '16px' }}>
+                <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
                   {exp.bullets.map((b, j) => (
                     <li key={j} style={{ marginBottom: '3px', color: '#4a5568' }}>
                       <T value={b} path={`experience~~${i}~~bullets~~${j}`} />
@@ -220,6 +221,8 @@ function MainSection({ title, children }: { title: string; children: React.React
         borderBottom: '2px solid #bee3f8',
         textTransform: 'uppercase',
         letterSpacing: '0.5px',
+        breakAfter: 'avoid',
+        pageBreakAfter: 'avoid',
       }}>
         {title}
       </h2>

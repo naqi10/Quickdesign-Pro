@@ -17,12 +17,10 @@ export async function htmlToPdf(html: string): Promise<Buffer> {
     const pdf = await page.pdf({
       format: 'A4',
       printBackground: true,
-      margin: {
-        top: '12mm',
-        bottom: '12mm',
-        left: '12mm',
-        right: '12mm',
-      },
+      // Margins are handled inside each template via CSS padding.
+      // The HTML also sets @page { margin: 0 } — keep both consistent.
+      margin: { top: '0', bottom: '0', left: '0', right: '0' },
+      preferCSSPageSize: true,
     })
 
     return Buffer.from(pdf)

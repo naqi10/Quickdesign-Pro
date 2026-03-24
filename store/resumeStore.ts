@@ -55,6 +55,10 @@ interface ResumeStore {
 
   // Reset
   reset: () => void
+
+  // Hydration flag — false until Zustand finishes reading localStorage
+  _hasHydrated: boolean
+  _setHasHydrated: (v: boolean) => void
 }
 
 export const useResumeStore = create<ResumeStore>()(
@@ -65,6 +69,8 @@ export const useResumeStore = create<ResumeStore>()(
       resumeData: null,
       isRewriting: false,
       rewriteStatus: '',
+      _hasHydrated: false,
+      _setHasHydrated: (v) => set({ _hasHydrated: v }),
 
       setFormData: (data) =>
         set(state => ({ formData: { ...state.formData, ...data } })),
@@ -156,7 +162,12 @@ export const useResumeStore = create<ResumeStore>()(
     }),
     {
       name: 'resume-generator-state',
-      // Persist form data and template selection — never lose client data
+      // Called once localStorage has been read and merged into the store.
+      // Until this fires, _hasHydrated stays false and the UI shows a loader.
+      onRehydrateStorage: () => (state) => {
+        state?._setHasHydrated(true)
+      },
+      // Only persist user data — never persist UI/loading state
       partialize: (state) => ({
         formData: state.formData,
         selectedTemplate: state.selectedTemplate,

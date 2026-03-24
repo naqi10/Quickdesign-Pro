@@ -70,7 +70,7 @@ export default function MinimalTemplate({ data, editable = false, onFieldChange 
       {data.experience.length > 0 && (
         <MinSection title="Experience">
           {data.experience.map((exp, i) => (
-            <div key={i} style={{ marginBottom: i < data.experience.length - 1 ? '14px' : 0 }}>
+            <div key={i} style={{ marginBottom: i < data.experience.length - 1 ? '14px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontWeight: 'bold', color: '#222222' }}>
                   <T value={exp.role} path={`experience~~${i}~~role`} />
@@ -82,7 +82,7 @@ export default function MinimalTemplate({ data, editable = false, onFieldChange 
               <p style={{ color: '#888888', fontSize: '9.5pt', margin: '1px 0 6px 0' }}>
                 <T value={exp.company} path={`experience~~${i}~~company`} />
               </p>
-              <ul style={{ margin: 0, paddingLeft: '16px', color: '#555555' }}>
+              <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc', color: '#555555' }}>
                 {exp.bullets.map((b, j) => (
                   <li key={j} style={{ marginBottom: '2px' }}>
                     <T value={b} path={`experience~~${i}~~bullets~~${j}`} />
@@ -160,6 +160,8 @@ function MinSection({ title, children }: { title: string; children: React.ReactN
         textTransform: 'uppercase',
         letterSpacing: '2px',
         margin: '0 0 8px 0',
+        breakAfter: 'avoid',
+        pageBreakAfter: 'avoid',
       }}>
         {title}
       </h2>

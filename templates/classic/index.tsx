@@ -100,7 +100,7 @@ export default function ClassicTemplate({ data, editable = false, onFieldChange 
       <div style={{ height: '4px', background: `linear-gradient(90deg, ${TEAL}, #4ECDC4)` }} />
 
       {/* ── BODY ───────────────────────────────────────────────── */}
-      <div style={{ padding: '20px 24px' }}>
+      <div style={{ padding: '20px 24px 24px' }}>
 
         {/* Professional Summary */}
         {data.summary && (
@@ -124,6 +124,8 @@ export default function ClassicTemplate({ data, editable = false, onFieldChange 
                   marginBottom: i < data.experience.length - 1 ? '14px' : 0,
                   paddingLeft: '12px',
                   borderLeft: `3px solid ${i === 0 ? TEAL : BORDER}`,
+                  breakInside: 'avoid',
+                  pageBreakInside: 'avoid',
                 }}
               >
                 {/* Role + Duration */}
@@ -150,7 +152,7 @@ export default function ClassicTemplate({ data, editable = false, onFieldChange 
                 </div>
 
                 {/* Bullets */}
-                <ul style={{ margin: 0, paddingLeft: '16px' }}>
+                <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
                   {exp.bullets.map((b, j) => (
                     <li key={j} style={{ marginBottom: '3px', color: '#334155', lineHeight: '1.5' }}>
                       <T value={b} path={`experience~~${i}~~bullets~~${j}`} />
@@ -272,7 +274,7 @@ export default function ClassicTemplate({ data, editable = false, onFieldChange 
   )
 }
 
-// ── Section wrapper ────────────────────────────────────────────
+// ── Section wrapper ──────────────────────────────────────────
 function Section({
   title, children, teal, border, light,
 }: {
@@ -284,12 +286,14 @@ function Section({
 }) {
   return (
     <div style={{ marginBottom: '18px' }}>
-      {/* Section header */}
+      {/* Section header — breakAfter:avoid keeps heading glued to first entry below it */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: '8px',
         marginBottom: '10px',
+        breakAfter: 'avoid',
+        pageBreakAfter: 'avoid',
       }}>
         <div style={{ width: '4px', height: '18px', background: teal, borderRadius: '2px', flexShrink: 0 }} />
         <h2 style={{
