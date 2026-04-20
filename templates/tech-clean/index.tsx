@@ -7,14 +7,30 @@ interface Props {
   onFieldChange?: (path: string, value: string) => void
 }
 
-const ACCENT  = '#0070f3'
-const DARK    = '#0f172a'
-const MEDIUM  = '#475569'
-const LIGHT   = '#94a3b8'
-const DIVIDER = '#e2e8f0'
+// Tech Clean — consistent with Classic Professional blue theme:
+// • BLUE (#0047AB) section headings + full-width 1px blue rule
+// • Near-black (#111111) body text — zero gray
+// • Skills: 2-col table when categorised, grid when 5+, pills otherwise
+// • Dates: italic dark charcoal — not light gray
+// • Company: bold blue
+
+const BLUE   = '#0047AB'   // cobalt blue — headings, rules, company, links
+const DARK   = '#0f172a'   // near-black — name, role titles
+const BODY   = '#111111'   // near-black — all body/bullet text
+const SUB    = '#444444'   // dark muted — subtitle, institution
+const BORDER = '#e2e8f0'   // light gray — contact bar only
+
+function safeHref(raw: string, scheme: 'http' | 'mailto' | 'tel'): string {
+  if (scheme === 'mailto') return `mailto:${raw}`
+  if (scheme === 'tel')    return `tel:${raw.replace(/\s/g, '')}`
+  return raw.startsWith('http') ? raw : `https://${raw}`
+}
 
 export default function TechClean({ data, editable = false, onFieldChange }: Props) {
   const skillEntries = Object.entries(data.skills)
+  const totalSkills  = skillEntries.reduce((n, [, s]) => n + s.length, 0)
+  const useTable     = skillEntries.length > 1
+  const useGrid      = !useTable && totalSkills >= 5
 
   function T({
     value, path, tag: Tag = 'span', style,
@@ -34,14 +50,14 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
       style={{
         fontFamily: '"Inter", "Segoe UI", Arial, sans-serif',
         fontSize: '10pt',
-        lineHeight: '1.6',
-        color: DARK,
+        lineHeight: '1.4',
+        color: BODY,
         background: '#ffffff',
         width: '210mm',
         minHeight: '297mm',
         boxSizing: 'border-box',
         margin: '0 auto',
-        padding: '14mm 16mm',
+        padding: '10mm 12mm',
       }}
     >
       {/* ── HEADER ─────────────────────────────────────────────── */}
@@ -55,43 +71,46 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
         }}>
           <T value={data.name} path="name" />
         </h1>
-        <div style={{ fontSize: '12pt', color: ACCENT, fontWeight: '600', marginBottom: '8px' }}>
+
+        {/* Job title — blue accent */}
+        <div style={{ fontSize: '12pt', color: BLUE, fontWeight: '600', marginBottom: '8px' }}>
           <T value={data.jobTitle} path="jobTitle" />
         </div>
-        {/* Contact bar */}
+
+        {/* Contact bar — dark text, blue links, thin border top/bottom */}
         <div style={{
           display: 'flex',
           flexWrap: 'wrap',
           gap: '4px 16px',
           fontSize: '9pt',
-          color: MEDIUM,
-          borderTop: `1px solid ${DIVIDER}`,
-          borderBottom: `1px solid ${DIVIDER}`,
+          color: SUB,
+          borderTop: `1px solid ${BORDER}`,
+          borderBottom: `1px solid ${BORDER}`,
           padding: '7px 0',
         }}>
           {data.phone && (
-            <span>
-              <span style={{ color: ACCENT, marginRight: '4px' }}>↳</span>
+            <a href={safeHref(data.phone, 'tel')} style={{ color: SUB, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ color: BLUE }}>↳</span>
               <T value={data.phone} path="phone" />
-            </span>
+            </a>
           )}
           {data.email && (
-            <span>
-              <span style={{ color: ACCENT, marginRight: '4px' }}>↳</span>
+            <a href={safeHref(data.email, 'mailto')} style={{ color: BLUE, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ color: BLUE }}>↳</span>
               <T value={data.email} path="email" />
-            </span>
+            </a>
           )}
           {data.linkedin && (
-            <span>
-              <span style={{ color: ACCENT, marginRight: '4px' }}>↳</span>
+            <a href={safeHref(data.linkedin, 'http')} style={{ color: BLUE, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ color: BLUE }}>↳</span>
               <T value={data.linkedin} path="linkedin" />
-            </span>
+            </a>
           )}
           {data.portfolio && (
-            <span>
-              <span style={{ color: ACCENT, marginRight: '4px' }}>↳</span>
+            <a href={safeHref(data.portfolio, 'http')} style={{ color: BLUE, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span style={{ color: BLUE }}>↳</span>
               <T value={data.portfolio} path="portfolio" />
-            </span>
+            </a>
           )}
         </div>
       </div>
@@ -103,7 +122,7 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
             value={data.summary}
             path="summary"
             tag="p"
-            style={{ margin: 0, color: MEDIUM, lineHeight: '1.7', textAlign: 'justify' }}
+            style={{ margin: 0, color: BODY, lineHeight: '1.5', textAlign: 'justify' }}
           />
         </TechSection>
       )}
@@ -115,36 +134,73 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
             <div
               key={i}
               style={{
-                marginBottom: i < data.experience.length - 1 ? '14px' : 0,
-                paddingLeft: '0',
+                marginBottom: i < data.experience.length - 1 ? '10px' : 0,
                 breakInside: 'avoid',
                 pageBreakInside: 'avoid',
               }}
             >
-              {/* Role + Duration on same row */}
+              {/* Role + Duration */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px' }}>
-                <strong style={{ fontSize: '10.5pt', color: DARK }}>
+                <strong style={{ fontSize: '10.5pt', color: DARK, fontWeight: '700' }}>
                   <T value={exp.role} path={`experience~~${i}~~role`} />
                 </strong>
-                <span style={{ fontSize: '9pt', color: LIGHT, fontStyle: 'italic', whiteSpace: 'nowrap' }}>
+                {/* Date — italic dark charcoal, NOT light gray */}
+                <span style={{ fontSize: '9pt', color: '#1a1a1a', fontStyle: 'italic', whiteSpace: 'nowrap' }}>
                   <T value={exp.duration} path={`experience~~${i}~~duration`} />
                 </span>
               </div>
-              {/* Company */}
-              <div style={{
-                fontSize: '9.5pt',
-                color: ACCENT,
-                fontWeight: '600',
-                marginBottom: '6px',
-              }}>
+
+              {/* Company — bold blue */}
+              <div style={{ fontSize: '9.5pt', color: BLUE, fontWeight: '700', marginBottom: '6px' }}>
                 <T value={exp.company} path={`experience~~${i}~~company`} />
               </div>
-              {/* Bullets */}
+
+              {/* Bullets — › marker + near-black text */}
               <ul style={{ margin: 0, paddingLeft: '16px', listStyleType: 'none' }}>
                 {exp.bullets.map((b, j) => (
-                  <li key={j} style={{ marginBottom: '3px', color: MEDIUM, lineHeight: '1.55', position: 'relative', paddingLeft: '12px' }}>
-                    <span style={{ position: 'absolute', left: 0, color: ACCENT, fontWeight: '700', fontSize: '10pt' }}>›</span>
+                  <li key={j} style={{ marginBottom: '2px', color: BODY, lineHeight: '1.4', position: 'relative', paddingLeft: '12px' }}>
+                    <span style={{ position: 'absolute', left: 0, color: BLUE, fontWeight: '700', fontSize: '10pt' }}>›</span>
                     <T value={b} path={`experience~~${i}~~bullets~~${j}`} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </TechSection>
+      )}
+
+      {/* ── PROJECTS ────────────────────────────────────────────── */}
+      {data.projects && data.projects.some(p => p.name) && (
+        <TechSection title="Projects">
+          {data.projects.filter(p => p.name).map((proj, i) => (
+            <div key={i} style={{ marginBottom: i < data.projects!.filter(p => p.name).length - 1 ? '10px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px' }}>
+                <strong style={{ fontSize: '10.5pt', color: DARK, fontWeight: '700' }}>
+                  <T value={proj.name} path={`projects~~${i}~~name`} />
+                </strong>
+                {proj.link && (
+                  <a href={safeHref(proj.link, 'http')} style={{ fontSize: '9pt', color: BLUE, textDecoration: 'underline' }}>
+                    <T value={proj.link} path={`projects~~${i}~~link`} />
+                  </a>
+                )}
+              </div>
+              {proj.techStack && proj.techStack.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '4px 0 6px' }}>
+                  {proj.techStack.map((tech, j) => (
+                    <span key={j} style={{
+                      background: '#E8F0FB', border: `1px solid ${BLUE}33`,
+                      color: BLUE, padding: '1px 8px', borderRadius: '4px', fontSize: '8.5pt', fontWeight: '500',
+                    }}>
+                      {tech}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <ul style={{ margin: 0, paddingLeft: '16px', listStyleType: 'none' }}>
+                {proj.bullets.map((b, j) => (
+                  <li key={j} style={{ marginBottom: '2px', color: BODY, lineHeight: '1.4', position: 'relative', paddingLeft: '12px' }}>
+                    <span style={{ position: 'absolute', left: 0, color: BLUE, fontWeight: '700', fontSize: '10pt' }}>›</span>
+                    <T value={b} path={`projects~~${i}~~bullets~~${j}`} />
                   </li>
                 ))}
               </ul>
@@ -169,14 +225,15 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
               }}
             >
               <div>
-                <strong style={{ fontSize: '10.5pt', color: DARK }}>
+                <strong style={{ fontSize: '10.5pt', color: DARK, fontWeight: '700' }}>
                   <T value={edu.degree} path={`education~~${i}~~degree`} />
                 </strong>
-                <div style={{ fontSize: '9.5pt', color: MEDIUM, marginTop: '1px' }}>
+                <div style={{ fontSize: '9.5pt', color: SUB, marginTop: '1px' }}>
                   <T value={edu.institution} path={`education~~${i}~~institution`} />
                 </div>
               </div>
-              <span style={{ fontSize: '9pt', color: LIGHT, fontStyle: 'italic', whiteSpace: 'nowrap', marginLeft: '12px' }}>
+              {/* Year — italic dark, NOT light gray */}
+              <span style={{ fontSize: '9pt', color: '#1a1a1a', fontStyle: 'italic', whiteSpace: 'nowrap', marginLeft: '12px' }}>
                 <T value={edu.year} path={`education~~${i}~~year`} />
               </span>
             </div>
@@ -187,42 +244,66 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
       {/* ── SKILLS ──────────────────────────────────────────────── */}
       {skillEntries.length > 0 && (
         <TechSection title="Skills">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {skillEntries.map(([cat, skills]) => (
-              <div key={cat} style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'baseline' }}>
-                {skillEntries.length > 1 && (
-                  <span style={{
-                    fontSize: '9pt',
-                    fontWeight: '700',
-                    color: DARK,
-                    minWidth: '110px',
-                    flexShrink: 0,
-                  }}>
-                    {cat}
-                  </span>
-                )}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
-                  {skills.map((s, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        background: '#f0f9ff',
-                        border: `1px solid #bae6fd`,
-                        color: '#0369a1',
-                        padding: '1px 9px',
-                        borderRadius: '4px',
-                        fontSize: '9pt',
-                        fontWeight: '500',
-                        display: 'inline-block',
-                      }}
-                    >
-                      <T value={s} path={`skills~~${cat}~~${i}`} />
-                    </span>
-                  ))}
+          {useTable ? (
+            /* 2-column table for multiple categories */
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9.5pt', lineHeight: '1.5' }}>
+              <tbody>
+                {skillEntries.map(([category, skills]) => (
+                  <tr key={category} style={{ breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                    <td style={{
+                      width: '165px', padding: '5px 10px',
+                      border: '1px solid #c8c8c8',
+                      fontWeight: '700', color: BLUE,
+                      verticalAlign: 'top', whiteSpace: 'nowrap',
+                    }}>
+                      {category}
+                    </td>
+                    <td style={{
+                      padding: '5px 10px', border: '1px solid #c8c8c8',
+                      color: BODY, verticalAlign: 'top',
+                    }}>
+                      {skills.map((s, i) => (
+                        <span key={i}>
+                          <T value={s} path={`skills~~${category}~~${i}`} />
+                          {i < skills.length - 1 ? ', ' : ''}
+                        </span>
+                      ))}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : useGrid ? (
+            /* 3-column grid for single category 5+ skills */
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '5px' }}>
+              {skillEntries[0][1].map((s, i) => (
+                <div key={i} style={{
+                  background: '#E8F0FB', border: `1px solid ${BLUE}33`,
+                  borderLeft: `3px solid ${BLUE}`,
+                  color: BODY, padding: '5px 10px',
+                  borderRadius: '4px', fontSize: '9pt', fontWeight: '500',
+                  breakInside: 'avoid',
+                }}>
+                  <T value={s} path={`skills~~${skillEntries[0][0]}~~${i}`} />
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            /* Pill tags for few skills */
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+              {skillEntries.flatMap(([cat, skills]) =>
+                skills.map((s, i) => (
+                  <span key={`${cat}-${i}`} style={{
+                    background: '#E8F0FB', border: `1px solid ${BLUE}33`,
+                    color: BODY, padding: '2px 9px',
+                    borderRadius: '4px', fontSize: '9pt', fontWeight: '500',
+                  }}>
+                    <T value={s} path={`skills~~${cat}~~${i}`} />
+                  </span>
+                ))
+              )}
+            </div>
+          )}
         </TechSection>
       )}
 
@@ -231,18 +312,11 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
         <TechSection title="Certifications">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {data.certifications.map((cert, i) => (
-              <span
-                key={i}
-                style={{
-                  background: '#fefce8',
-                  border: `1px solid #fde68a`,
-                  color: '#92400e',
-                  padding: '2px 12px',
-                  borderRadius: '4px',
-                  fontSize: '9.5pt',
-                  fontWeight: '500',
-                }}
-              >
+              <span key={i} style={{
+                background: '#E8F0FB', border: `1px solid ${BLUE}33`,
+                color: BODY, padding: '2px 12px',
+                borderRadius: '4px', fontSize: '9.5pt', fontWeight: '500',
+              }}>
                 <T value={cert} path={`certifications~~${i}`} />
               </span>
             ))}
@@ -253,25 +327,28 @@ export default function TechClean({ data, editable = false, onFieldChange }: Pro
   )
 }
 
+// ── Section wrapper ──────────────────────────────────────────
+// BLUE heading + full-width 1px blue rule (was gray DIVIDER before)
 function TechSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: '16px' }}>
-      <div style={{ breakAfter: 'avoid', pageBreakAfter: 'avoid' }}>
+    <div style={{ marginBottom: '10px' }}>
+      <div style={{ breakAfter: 'avoid', pageBreakAfter: 'avoid', marginBottom: '5px' }}>
         <h2 style={{
-          fontSize: '9.5pt',
-          fontWeight: '700',
-          color: DARK,
-          margin: '0 0 6px',
+          fontSize: '10pt',
+          fontWeight: '800',
+          color: BLUE,           // was DARK (#0f172a) — now cobalt blue
+          margin: '0 0 3px',
           textTransform: 'uppercase',
-          letterSpacing: '2px',
+          letterSpacing: '1.5px',
           display: 'flex',
           alignItems: 'center',
           gap: '8px',
         }}>
-          <span style={{ color: ACCENT }}>—</span>
+          <span style={{ color: BLUE, fontWeight: '400', fontSize: '11pt' }}>—</span>
           {title}
-          <div style={{ flex: 1, height: '1px', background: DIVIDER }} />
         </h2>
+        {/* Full-width 1px blue rule — was #e2e8f0 gray before */}
+        <div style={{ height: '1px', background: BLUE }} />
       </div>
       {children}
     </div>

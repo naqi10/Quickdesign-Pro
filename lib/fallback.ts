@@ -11,7 +11,7 @@ import { ClientFormData, ResumeData } from './types'
 export function buildFallbackResume(formData: ClientFormData): ResumeData {
   const {
     name, phone, email, linkedin, portfolio,
-    jobTitle, rawSummary, rawSkills, experiences, education, certifications,
+    jobTitle, rawSummary, rawSkills, experiences, projects = [], education, certifications,
   } = formData
 
   // Summary — clean up what the user typed, no AI
@@ -51,6 +51,18 @@ export function buildFallbackResume(formData: ClientFormData): ResumeData {
       }
     })
 
+  // Projects — pass through raw as minimal bullets
+  const fallbackProjects = projects
+    .filter(p => p.name.trim() || p.description.trim())
+    .map(p => ({
+      name: p.name,
+      link: p.link ?? '',
+      techStack: p.techStack.split(',').map(t => t.trim()).filter(Boolean),
+      bullets: p.description.trim()
+        ? [capitalizeFirst(p.description.trim())]
+        : [`Built ${p.name || 'project'} using ${p.techStack || 'modern technologies'}.`],
+    }))
+
   // Certifications
   const certList = certifications
     ? certifications.split('\n').map(c => c.trim()).filter(Boolean)
@@ -65,6 +77,7 @@ export function buildFallbackResume(formData: ClientFormData): ResumeData {
     jobTitle,
     summary,
     experience,
+    projects: fallbackProjects,
     skills,
     education,
     certifications: certList,

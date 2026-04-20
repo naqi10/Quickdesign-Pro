@@ -60,30 +60,30 @@ export default function SmartPaste({ onParsed }: SmartPasteProps) {
     return (
       <button
         onClick={() => { setOpen(true); setTimeout(() => textareaRef.current?.focus(), 50) }}
-        className="w-full flex items-center gap-2 bg-violet-900/40 hover:bg-violet-900/60 border border-violet-700/50 hover:border-violet-600 text-violet-300 hover:text-violet-200 font-medium py-2.5 px-4 rounded-lg transition-all text-sm"
+        className="w-full flex items-center gap-2 bg-violet-50 hover:bg-violet-100 border border-violet-200 hover:border-violet-400 text-violet-700 hover:text-violet-800 font-medium py-2.5 px-4 rounded-lg transition-all text-sm"
       >
         <span className="text-base">⚡</span>
         Smart Paste
-        <span className="ml-auto text-xs text-violet-500">paste WhatsApp text → auto-fill</span>
+        <span className="ml-auto text-xs text-violet-400">paste WhatsApp text → auto-fill</span>
       </button>
     )
   }
 
   return (
-    <div className="border border-violet-700/60 rounded-lg bg-violet-950/30 p-3 space-y-2">
+    <div className="border border-violet-200 rounded-lg bg-violet-50 p-3 space-y-2">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-violet-300 flex items-center gap-1.5">
+        <span className="text-xs font-semibold text-violet-700 flex items-center gap-1.5">
           <span>⚡</span> Smart Paste
         </span>
         <button
           onClick={() => { setOpen(false); setText(''); setError('') }}
-          className="text-gray-600 hover:text-gray-400 text-xs"
+          className="text-slate-400 hover:text-slate-600 text-xs"
         >
           ✕ close
         </button>
       </div>
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-slate-500">
         Paste the client&apos;s WhatsApp message, CV text, or any raw details below. AI will fill the entire form instantly.
       </p>
 
@@ -94,17 +94,17 @@ export default function SmartPaste({ onParsed }: SmartPasteProps) {
         onPaste={handlePaste}
         placeholder="Hi, my name is Ahmed. I am a software developer with 3 years experience. I worked at Systems Ltd as junior developer from 2021 to 2023. My skills are React, Node.js, Python. I studied BS Computer Science from FAST 2021..."
         rows={5}
-        className="w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-violet-500 transition-colors resize-none"
+        className="w-full bg-white border border-slate-300 rounded-md px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-transparent transition-colors resize-none"
       />
 
       {error && (
-        <p className="text-xs text-red-400">{error}</p>
+        <p className="text-xs text-red-500">{error}</p>
       )}
 
       <button
         onClick={handleParse}
         disabled={loading || !text.trim()}
-        className="w-full bg-violet-700 hover:bg-violet-600 disabled:bg-violet-900/40 disabled:text-violet-700 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+        className="w-full bg-violet-600 hover:bg-violet-700 disabled:bg-violet-200 disabled:text-violet-400 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
       >
         {loading ? (
           <>

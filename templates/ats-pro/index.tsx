@@ -31,14 +31,14 @@ export default function AtsPro({ data, editable = false, onFieldChange }: Props)
       style={{
         fontFamily: '"Times New Roman", Georgia, serif',
         fontSize: '11pt',
-        lineHeight: '1.6',
+        lineHeight: '1.4',
         color: '#111111',
         background: '#ffffff',
         width: '210mm',
         minHeight: '297mm',
         boxSizing: 'border-box',
         margin: '0 auto',
-        padding: '14mm 16mm',
+        padding: '10mm 14mm',
       }}
     >
       {/* ── HEADER ─────────────────────────────────────────────── */}
@@ -98,7 +98,7 @@ export default function AtsPro({ data, editable = false, onFieldChange }: Props)
             tag="p"
             style={{
               margin: 0,
-              lineHeight: '1.7',
+              lineHeight: '1.5',
               textAlign: 'justify',
               color: '#1a1a1a',
               fontSize: '10.5pt',
@@ -114,7 +114,7 @@ export default function AtsPro({ data, editable = false, onFieldChange }: Props)
             <div
               key={i}
               style={{
-                marginBottom: i < data.experience.length - 1 ? '14px' : 0,
+                marginBottom: i < data.experience.length - 1 ? '10px' : 0,
                 breakInside: 'avoid',
                 pageBreakInside: 'avoid',
               }}
@@ -154,12 +154,44 @@ export default function AtsPro({ data, editable = false, onFieldChange }: Props)
               }}>
                 {exp.bullets.map((b, j) => (
                   <li key={j} style={{
-                    marginBottom: '4px',
-                    lineHeight: '1.6',
+                    marginBottom: '2px',
+                    lineHeight: '1.4',
                     color: '#111',
                     fontSize: '10.5pt',
                   }}>
                     <T value={b} path={`experience~~${i}~~bullets~~${j}`} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </AtsSection>
+      )}
+
+      {/* ── PROJECTS ────────────────────────────────────────────── */}
+      {data.projects && data.projects.some(p => p.name) && (
+        <AtsSection title="Projects">
+          {data.projects.filter(p => p.name).map((proj, i) => (
+            <div key={i} style={{ marginBottom: i < data.projects.filter(p => p.name).length - 1 ? '12px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px' }}>
+                <strong style={{ fontSize: '11pt', color: '#000', fontWeight: '700' }}>
+                  <T value={proj.name} path={`projects~~${i}~~name`} />
+                </strong>
+                {proj.link && (
+                  <span style={{ fontSize: '9.5pt', color: '#333', fontStyle: 'italic' }}>
+                    <T value={proj.link} path={`projects~~${i}~~link`} />
+                  </span>
+                )}
+              </div>
+              {proj.techStack && proj.techStack.length > 0 && (
+                <div style={{ fontSize: '10pt', color: '#333', fontStyle: 'italic', margin: '2px 0 5px' }}>
+                  Tech: {proj.techStack.join(', ')}
+                </div>
+              )}
+              <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
+                {proj.bullets.map((b, j) => (
+                  <li key={j} style={{ marginBottom: '2px', lineHeight: '1.4', color: '#111', fontSize: '10.5pt' }}>
+                    <T value={b} path={`projects~~${i}~~bullets~~${j}`} />
                   </li>
                 ))}
               </ul>
@@ -254,9 +286,9 @@ export default function AtsPro({ data, editable = false, onFieldChange }: Props)
 // ── Section wrapper ──────────────────────────────────────────
 function AtsSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: '18px' }}>
+    <div style={{ marginBottom: '12px' }}>
       {/* Heading stays with first entry below it */}
-      <div style={{ breakAfter: 'avoid', pageBreakAfter: 'avoid', marginBottom: '8px' }}>
+      <div style={{ breakAfter: 'avoid', pageBreakAfter: 'avoid', marginBottom: '5px' }}>
         <h2 style={{
           fontFamily: '"Times New Roman", Georgia, serif',
           fontSize: '11.5pt',

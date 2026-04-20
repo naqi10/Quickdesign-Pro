@@ -1,4 +1,4 @@
-import { RawExperience, ClientFormData } from './types'
+import { RawExperience, RawProject } from './types'
 
 /**
  * Builds the professional summary rewrite prompt.
@@ -96,6 +96,32 @@ Output ONLY a JSON object where keys are category names and values are arrays of
 If fewer than 8 skills, use a single key: "Core Skills".
 Example: { "Technical Skills": ["Python", "SQL"], "Soft Skills": ["Leadership"] }
 No explanations, no markdown, just the raw JSON object.`
+}
+
+/**
+ * Builds the project bullet-points rewrite prompt for a single project.
+ */
+export function projectPrompt(project: RawProject, jobTitle: string): string {
+  const wordCount = project.description.trim().split(/\s+/).length
+  const bulletCount = wordCount > 60 ? 4 : 3
+
+  return `You are an expert software resume writer.
+Candidate's target job: ${jobTitle}
+Project name: "${project.name}"
+Tech stack: "${project.techStack}"
+Raw description from client: "${project.description}"
+
+Rewrite this into ${bulletCount} professional resume bullet points for a software/tech resume.
+Rules:
+- Start each bullet with a strong past-tense action verb (Built, Developed, Designed, Implemented, Integrated, Deployed, Optimised, Reduced, Increased…)
+- Mention the tech stack naturally (React, Node.js, etc.)
+- Quantify impact where possible (e.g. "reduced load time by 40%", "serving 500+ users")
+- Keep each bullet concise — max 18 words
+- Focus on what was built and the impact, not just descriptions
+
+Output ONLY a JSON array of ${bulletCount} strings.
+Example: ["Built REST API using Node.js serving 1,000+ daily requests", "Integrated Stripe payment gateway…"]
+No explanations, no markdown, just the raw JSON array.`
 }
 
 /**

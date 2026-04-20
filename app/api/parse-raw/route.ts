@@ -41,7 +41,16 @@ Extract all available information and return ONLY a valid JSON object with this 
     }
   ],
   "certifications": "one certification per line, or empty string",
-  "jobDescription": ""
+  "jobDescription": "",
+  "projects": [
+    {
+      "id": "1",
+      "name": "project name",
+      "description": "what the project does — keep in client's words",
+      "techStack": "comma-separated tech used e.g. React, Node.js, MongoDB",
+      "link": "GitHub or live URL, or empty string"
+    }
+  ]
 }
 
 Rules:
@@ -93,6 +102,10 @@ export async function POST(req: NextRequest) {
       ? parsed.education
       : [{ id: '1', degree: '', institution: '', year: '' }]
 
+    const safeProjects = Array.isArray(parsed.projects) && parsed.projects.length > 0
+      ? parsed.projects
+      : [{ id: '1', name: '', description: '', techStack: '', link: '' }]
+
     const formData: ClientFormData = {
       name: parsed.name ?? '',
       phone: parsed.phone ?? '',
@@ -105,6 +118,7 @@ export async function POST(req: NextRequest) {
       rawSkills: parsed.rawSkills ?? '',
       certifications: parsed.certifications ?? '',
       experiences: safeExperiences.map((e, i) => ({ ...e, id: String(i + 1) })),
+      projects: safeProjects.map((p, i) => ({ ...p, id: String(i + 1), link: p.link ?? '' })),
       education: safeEducation.map((e, i) => ({ ...e, id: String(i + 1) })),
     }
 

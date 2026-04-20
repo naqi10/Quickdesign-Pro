@@ -21,6 +21,8 @@ export async function htmlToPdf(html: string): Promise<Buffer> {
       // The HTML also sets @page { margin: 0 } — keep both consistent.
       margin: { top: '0', bottom: '0', left: '0', right: '0' },
       preferCSSPageSize: true,
+      // Tagged PDF enables clickable links and proper text selection
+      tagged: true,
     })
 
     return Buffer.from(pdf)

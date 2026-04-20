@@ -30,33 +30,11 @@ export default function ResumePreview() {
   const dataWithTemplate = { ...resumeData, templateId: selectedTemplate }
 
   return (
-    <div className="relative">
-      {/* Edit hint bar */}
-      <div
-        style={{
-          position: 'sticky',
-          top: 0,
-          zIndex: 10,
-          background: 'rgba(59,130,246,0.92)',
-          color: '#fff',
-          fontSize: '11px',
-          padding: '5px 12px',
-          textAlign: 'center',
-          letterSpacing: '0.3px',
-        }}
-      >
-        ✎ Click any text to edit it directly — changes are saved instantly
-      </div>
-
-      {/* zoom: 0.68 shrinks layout space too (unlike transform: scale), so no margin hacks needed */}
-      <div style={{ zoom: 0.68 }}>
-        <TemplateComponent
-          data={dataWithTemplate}
-          editable={true}
-          onFieldChange={updateResumeField}
-        />
-      </div>
-    </div>
+    <TemplateComponent
+      data={dataWithTemplate}
+      editable={true}
+      onFieldChange={updateResumeField}
+    />
   )
 }
 
@@ -81,9 +59,17 @@ export function getResumeHTML(
   <title>${resumeData.name} — Resume</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { margin: 0; padding: 0; background: white; }
+    body { margin: 0; padding: 0; background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     @page { size: A4; margin: 0; }
-    @media print { body { margin: 0; } }
+    @media print {
+      body { margin: 0; }
+      h2, h3 { break-after: avoid; page-break-after: avoid; }
+      li, .exp-block { break-inside: avoid; page-break-inside: avoid; }
+      /* Prevent orphan headings at bottom of page */
+      h2 + *, h3 + * { break-before: avoid; page-break-before: avoid; }
+    }
+    /* Ensure links are styled consistently in PDF */
+    a { text-decoration: none; }
   </style>
 </head>
 <body>${bodyHTML}</body>

@@ -15,6 +15,14 @@ export interface RawEducation {
   year: string
 }
 
+export interface RawProject {
+  id: string
+  name: string
+  description: string   // raw description — AI rewrites to bullets
+  techStack: string     // comma-separated tech (React, Node.js, MongoDB…)
+  link: string          // optional URL (GitHub, live demo)
+}
+
 export interface ClientFormData {
   // Personal info
   name: string
@@ -24,10 +32,11 @@ export interface ClientFormData {
   portfolio: string
   // Target
   jobTitle: string
-  jobDescription: string  // optional — paste JD for keyword matching
+  jobDescription: string
   // Raw sections
   rawSummary: string
   experiences: RawExperience[]
+  projects: RawProject[]
   rawSkills: string
   education: RawEducation[]
   certifications: string
@@ -42,6 +51,13 @@ export interface ProcessedExperience {
   bullets: string[]
 }
 
+export interface ProcessedProject {
+  name: string
+  bullets: string[]
+  techStack: string[]
+  link: string
+}
+
 export interface ResumeData {
   // Personal
   name: string
@@ -52,7 +68,8 @@ export interface ResumeData {
   // Processed sections
   summary: string
   experience: ProcessedExperience[]
-  skills: Record<string, string[]>   // { "Technical Skills": [...], "Soft Skills": [...] }
+  projects: ProcessedProject[]
+  skills: Record<string, string[]>
   education: RawEducation[]
   certifications: string[]
   // Meta

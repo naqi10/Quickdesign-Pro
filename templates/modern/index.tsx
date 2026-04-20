@@ -28,7 +28,7 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
       style={{
         fontFamily: '"Segoe UI", Arial, sans-serif',
         fontSize: '10.5pt',
-        lineHeight: '1.55',
+        lineHeight: '1.4',
         color: '#2d3748',
         // Gradient creates the two-tone background on EVERY page —
         // fixes the "sidebar disappears on page 2" problem completely.
@@ -43,12 +43,12 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
       {/* Left sidebar — background is transparent, parent gradient handles color */}
       <div style={{
         width: '38%',
-        padding: '24px 18px',
+        padding: '20px 14px',
         color: '#e2e8f0',
         flexShrink: 0,
       }}>
         {/* Name */}
-        <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #2d6a9f' }}>
+        <div style={{ marginBottom: '14px', paddingBottom: '16px', borderBottom: '1px solid #2d6a9f' }}>
           <h1 style={{ fontSize: '17pt', fontWeight: 'bold', color: '#ffffff', margin: '0 0 4px 0', lineHeight: 1.2 }}>
             <T value={data.name} path="name" />
           </h1>
@@ -133,11 +133,11 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
       </div>
 
       {/* Main content */}
-      <div style={{ flex: 1, padding: '24px 20px', background: '#ffffff' }}>
+      <div style={{ flex: 1, padding: '20px 16px', background: '#ffffff' }}>
         {/* Summary */}
         {data.summary && (
           <MainSection title="Profile">
-            <T value={data.summary} path="summary" tag="p" style={{ margin: 0, textAlign: 'justify', color: '#4a5568' }} />
+            <T value={data.summary} path="summary" tag="p" style={{ margin: 0, textAlign: 'justify', color: '#111111' }} />
           </MainSection>
         )}
 
@@ -145,7 +145,7 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
         {data.experience.length > 0 && (
           <MainSection title="Experience">
             {data.experience.map((exp, i) => (
-              <div key={i} style={{ marginBottom: i < data.experience.length - 1 ? '14px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+              <div key={i} style={{ marginBottom: i < data.experience.length - 1 ? '10px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
                   <strong style={{ fontSize: '11pt', color: '#1e3a5f' }}>
                     <T value={exp.role} path={`experience~~${i}~~role`} />
@@ -161,13 +161,49 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
                     <T value={exp.duration} path={`experience~~${i}~~duration`} />
                   </span>
                 </div>
-                <p style={{ fontSize: '9.5pt', color: '#718096', margin: '2px 0 6px 0' }}>
+                <p style={{ fontSize: '9.5pt', color: '#1e3a5f', fontWeight: '600', margin: '2px 0 6px 0' }}>
                   <T value={exp.company} path={`experience~~${i}~~company`} />
                 </p>
                 <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
                   {exp.bullets.map((b, j) => (
-                    <li key={j} style={{ marginBottom: '3px', color: '#4a5568' }}>
+                    <li key={j} style={{ marginBottom: '2px', color: '#111111' }}>
                       <T value={b} path={`experience~~${i}~~bullets~~${j}`} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </MainSection>
+        )}
+
+        {/* Projects */}
+        {data.projects && data.projects.some(p => p.name) && (
+          <MainSection title="Projects">
+            {data.projects.filter(p => p.name).map((proj, i) => (
+              <div key={i} style={{ marginBottom: i < data.projects.filter(p => p.name).length - 1 ? '12px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px' }}>
+                  <strong style={{ fontSize: '10.5pt', color: '#1e3a5f' }}>
+                    <T value={proj.name} path={`projects~~${i}~~name`} />
+                  </strong>
+                  {proj.link && (
+                    <span style={{ fontSize: '8.5pt', color: '#2b6cb0' }}>
+                      <T value={proj.link} path={`projects~~${i}~~link`} />
+                    </span>
+                  )}
+                </div>
+                {proj.techStack && proj.techStack.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', margin: '3px 0 5px' }}>
+                    {proj.techStack.map((tech, j) => (
+                      <span key={j} style={{ background: '#ebf8ff', color: '#2b6cb0', border: '1px solid #bee3f8', padding: '1px 6px', borderRadius: '8px', fontSize: '8pt' }}>
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
+                  {proj.bullets.map((b, j) => (
+                    <li key={j} style={{ marginBottom: '2px', color: '#111111', fontSize: '9.5pt' }}>
+                      <T value={b} path={`projects~~${i}~~bullets~~${j}`} />
                     </li>
                   ))}
                 </ul>
@@ -182,7 +218,7 @@ export default function ModernTemplate({ data, editable = false, onFieldChange }
 
 function SideSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: '18px' }}>
+    <div style={{ marginBottom: '14px' }}>
       <h3 style={{
         fontSize: '9pt',
         fontWeight: 'bold',
@@ -211,13 +247,13 @@ function ContactItem({ label, children }: { label: string; children: React.React
 
 function MainSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div style={{ marginBottom: '18px' }}>
+    <div style={{ marginBottom: '10px' }}>
       <h2 style={{
         fontSize: '12pt',
         fontWeight: 'bold',
         color: '#1e3a5f',
         margin: '0 0 8px 0',
-        paddingBottom: '4px',
+        paddingBottom: '3px',
         borderBottom: '2px solid #bee3f8',
         textTransform: 'uppercase',
         letterSpacing: '0.5px',

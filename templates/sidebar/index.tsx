@@ -34,7 +34,7 @@ export default function SidebarCreative({ data, editable = false, onFieldChange 
       style={{
         fontFamily: '"Segoe UI", Arial, sans-serif',
         fontSize: '10pt',
-        lineHeight: '1.55',
+        lineHeight: '1.4',
         color: '#1a1a2e',
         background: `linear-gradient(to right, ${SIDEBAR_BG} 36%, #ffffff 36%)`,
         width: '210mm',
@@ -49,12 +49,12 @@ export default function SidebarCreative({ data, editable = false, onFieldChange 
       <div style={{
         width: '36%',
         flexShrink: 0,
-        padding: '26px 18px 24px',
+        padding: '20px 14px 18px',
         color: LIGHT_TEXT,
         boxSizing: 'border-box',
       }}>
         {/* Name block */}
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '14px' }}>
           <h1 style={{
             fontSize: '17pt',
             fontWeight: '700',
@@ -177,7 +177,7 @@ export default function SidebarCreative({ data, editable = false, onFieldChange 
       <div style={{
         flex: 1,
         background: '#ffffff',
-        padding: '26px 22px 24px 20px',
+        padding: '20px 18px 18px 16px',
         boxSizing: 'border-box',
       }}>
 
@@ -188,7 +188,7 @@ export default function SidebarCreative({ data, editable = false, onFieldChange 
               value={data.summary}
               path="summary"
               tag="p"
-              style={{ margin: 0, color: '#334155', lineHeight: '1.65', textAlign: 'justify' }}
+              style={{ margin: 0, color: '#111111', lineHeight: '1.5', textAlign: 'justify' }}
             />
           </MainSection>
         )}
@@ -200,7 +200,7 @@ export default function SidebarCreative({ data, editable = false, onFieldChange 
               <div
                 key={i}
                 style={{
-                  marginBottom: i < data.experience.length - 1 ? '14px' : 0,
+                  marginBottom: i < data.experience.length - 1 ? '10px' : 0,
                   breakInside: 'avoid',
                   pageBreakInside: 'avoid',
                 }}
@@ -229,8 +229,44 @@ export default function SidebarCreative({ data, editable = false, onFieldChange 
                 {/* Bullets */}
                 <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
                   {exp.bullets.map((b, j) => (
-                    <li key={j} style={{ marginBottom: '3px', color: '#334155', lineHeight: '1.5', fontSize: '10pt' }}>
+                    <li key={j} style={{ marginBottom: '2px', color: '#111111', lineHeight: '1.4', fontSize: '10pt' }}>
                       <T value={b} path={`experience~~${i}~~bullets~~${j}`} />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </MainSection>
+        )}
+
+        {/* Projects */}
+        {data.projects && data.projects.some(p => p.name) && (
+          <MainSection title="Projects" accent={ACCENT}>
+            {data.projects.filter(p => p.name).map((proj, i) => (
+              <div key={i} style={{ marginBottom: i < data.projects.filter(p => p.name).length - 1 ? '12px' : 0, breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', flexWrap: 'wrap', gap: '4px' }}>
+                  <strong style={{ fontSize: '10.5pt', color: '#1a1a2e' }}>
+                    <T value={proj.name} path={`projects~~${i}~~name`} />
+                  </strong>
+                  {proj.link && (
+                    <span style={{ fontSize: '8.5pt', color: ACCENT }}>
+                      <T value={proj.link} path={`projects~~${i}~~link`} />
+                    </span>
+                  )}
+                </div>
+                {proj.techStack && proj.techStack.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', margin: '3px 0 5px' }}>
+                    {proj.techStack.map((tech, j) => (
+                      <span key={j} style={{ background: SIDEBAR_MID, border: `1px solid rgba(229,124,35,0.3)`, color: LIGHT_TEXT, padding: '1px 7px', borderRadius: '8px', fontSize: '8.5pt' }}>
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <ul style={{ margin: 0, paddingLeft: '20px', listStyleType: 'disc' }}>
+                  {proj.bullets.map((b, j) => (
+                    <li key={j} style={{ marginBottom: '2px', color: '#111111', lineHeight: '1.4', fontSize: '10pt' }}>
+                      <T value={b} path={`projects~~${i}~~bullets~~${j}`} />
                     </li>
                   ))}
                 </ul>
@@ -245,7 +281,7 @@ export default function SidebarCreative({ data, editable = false, onFieldChange 
 
 function SideSection({ title, children, accent }: { title: string; children: React.ReactNode; accent: string }) {
   return (
-    <div style={{ marginBottom: '18px' }}>
+    <div style={{ marginBottom: '14px' }}>
       <div style={{
         fontSize: '8.5pt',
         fontWeight: '700',
@@ -268,11 +304,11 @@ function SideSection({ title, children, accent }: { title: string; children: Rea
 
 function MainSection({ title, children, accent }: { title: string; children: React.ReactNode; accent: string }) {
   return (
-    <div style={{ marginBottom: '18px' }}>
+    <div style={{ marginBottom: '10px' }}>
       <div style={{
         breakAfter: 'avoid',
         pageBreakAfter: 'avoid',
-        marginBottom: '10px',
+        marginBottom: '6px',
       }}>
         <h2 style={{
           fontSize: '10.5pt',

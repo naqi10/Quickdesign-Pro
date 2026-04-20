@@ -4,20 +4,23 @@ import SmartPaste from '@/components/SmartPaste'
 import { ClientFormData } from '@/lib/types'
 
 export default function ClientForm() {
-  const { formData, setFormData, replaceFormData, setExperience, addExperience, removeExperience,
-    setEducation, addEducation, removeEducation } = useResumeStore()
+  const {
+    formData, setFormData, replaceFormData,
+    setExperience, addExperience, removeExperience,
+    setProject, addProject, removeProject,
+    setEducation, addEducation, removeEducation,
+  } = useResumeStore()
 
   function handleSmartParsed(data: ClientFormData) {
     replaceFormData(data)
   }
 
   return (
-    <div className="space-y-6">
-      {/* Smart Paste */}
+    <div className="space-y-5">
       <SmartPaste onParsed={handleSmartParsed} />
 
-      {/* Personal Info */}
-      <Section title="Personal Information">
+      {/* ── Personal Info ── */}
+      <Section title="Personal Information" icon="👤">
         <div className="grid grid-cols-2 gap-3">
           <Field label="Full Name *">
             <input value={formData.name} onChange={e => setFormData({ name: e.target.value })}
@@ -35,40 +38,35 @@ export default function ClientForm() {
             <input value={formData.email} onChange={e => setFormData({ email: e.target.value })}
               placeholder="ahmed@email.com" className={input} />
           </Field>
-          <Field label="LinkedIn (optional)">
+          <Field label="LinkedIn">
             <input value={formData.linkedin} onChange={e => setFormData({ linkedin: e.target.value })}
               placeholder="linkedin.com/in/ahmed" className={input} />
           </Field>
-          <Field label="Portfolio (optional)">
+          <Field label="Portfolio / GitHub">
             <input value={formData.portfolio} onChange={e => setFormData({ portfolio: e.target.value })}
               placeholder="github.com/ahmed" className={input} />
           </Field>
         </div>
       </Section>
 
-      {/* Summary */}
-      <Section title="Professional Summary">
-        <p className="text-xs text-gray-400 mb-2">Write anything — AI will rewrite it professionally.</p>
-        <textarea
-          value={formData.rawSummary}
-          onChange={e => setFormData({ rawSummary: e.target.value })}
-          placeholder="e.g. I have 3 years experience in software development. I work with React and Node.js. I like solving problems."
-          rows={3}
-          className={textarea}
-        />
+      {/* ── Summary ── */}
+      <Section title="Professional Summary" icon="✍️">
+        <p className="text-xs text-slate-400 mb-2">Write anything — AI rewrites it professionally.</p>
+        <textarea value={formData.rawSummary} onChange={e => setFormData({ rawSummary: e.target.value })}
+          placeholder="e.g. I have 3 years in software development, work with React and Node.js…"
+          rows={3} className={textarea} />
       </Section>
 
-      {/* Experience */}
-      <Section title="Work Experience">
-        <p className="text-xs text-gray-400 mb-3">Describe duties in plain language — AI converts to bullet points.</p>
+      {/* ── Work Experience ── */}
+      <Section title="Work Experience" icon="💼">
+        <p className="text-xs text-slate-400 mb-3">Describe duties informally — AI converts to bullets.</p>
         {formData.experiences.map((exp, idx) => (
-          <div key={exp.id} className="border border-gray-700 rounded-lg p-3 mb-3 bg-gray-800/40">
+          <div key={exp.id} className="border border-slate-200 rounded-xl p-3 mb-3 bg-slate-50">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-gray-400">Experience #{idx + 1}</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Experience #{idx + 1}</span>
               {formData.experiences.length > 1 && (
-                <button onClick={() => removeExperience(exp.id)} className="text-red-400 hover:text-red-300 text-xs">
-                  Remove
-                </button>
+                <button onClick={() => removeExperience(exp.id)}
+                  className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors">Remove</button>
               )}
             </div>
             <div className="grid grid-cols-2 gap-2 mb-2">
@@ -85,40 +83,78 @@ export default function ClientForm() {
               <input value={exp.duration} onChange={e => setExperience(exp.id, { duration: e.target.value })}
                 placeholder="Jan 2022 – Dec 2023" className={`${input} mb-2`} />
             </Field>
-            <Field label="Raw Duties (describe informally)">
+            <Field label="Raw Duties (informal is fine)">
               <textarea value={exp.rawDuties} onChange={e => setExperience(exp.id, { rawDuties: e.target.value })}
-                placeholder="I made websites for clients, fixed bugs, worked in a team of 5 developers, attended daily standups..."
+                placeholder="I made websites, fixed bugs, worked in team of 5, attended standups…"
                 rows={3} className={textarea} />
             </Field>
           </div>
         ))}
-        <button onClick={addExperience} className="text-blue-400 hover:text-blue-300 text-sm font-medium">
-          + Add Another Experience
+        <button onClick={addExperience}
+          className="text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 transition-colors">
+          + Add Experience
         </button>
       </Section>
 
-      {/* Skills */}
-      <Section title="Skills">
-        <p className="text-xs text-gray-400 mb-2">Comma-separated. AI will clean, group, and add missing key skills.</p>
-        <textarea
-          value={formData.rawSkills}
-          onChange={e => setFormData({ rawSkills: e.target.value })}
-          placeholder="React, Node.js, Python, teamwork, problem solving, MySQL, communication, Git"
-          rows={2}
-          className={textarea}
-        />
+      {/* ── Projects ── */}
+      <Section title="Projects" icon="🚀" badge="IT / Software">
+        <p className="text-xs text-slate-400 mb-3">
+          Add your key projects — AI rewrites bullets and highlights tech stack.
+          Auto-detected from Smart Paste if present in your CV text.
+        </p>
+        {(formData.projects ?? []).map((proj, idx) => (
+          <div key={proj.id} className="border border-blue-100 rounded-xl p-3 mb-3 bg-blue-50/40">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Project #{idx + 1}</span>
+              {(formData.projects ?? []).length > 1 && (
+                <button onClick={() => removeProject(proj.id)}
+                  className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors">Remove</button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-2">
+              <Field label="Project Name">
+                <input value={proj.name} onChange={e => setProject(proj.id, { name: e.target.value })}
+                  placeholder="E-Commerce App" className={input} />
+              </Field>
+              <Field label="Live / GitHub Link (optional)">
+                <input value={proj.link} onChange={e => setProject(proj.id, { link: e.target.value })}
+                  placeholder="github.com/you/project" className={input} />
+              </Field>
+            </div>
+            <Field label="Tech Stack (comma-separated)">
+              <input value={proj.techStack} onChange={e => setProject(proj.id, { techStack: e.target.value })}
+                placeholder="React, Node.js, MongoDB, Stripe" className={`${input} mb-2`} />
+            </Field>
+            <Field label="Description (informal — AI rewrites)">
+              <textarea value={proj.description} onChange={e => setProject(proj.id, { description: e.target.value })}
+                placeholder="I built a shopping app with user auth, cart, and Stripe payments. Used React frontend with Node backend and MongoDB database…"
+                rows={3} className={textarea} />
+            </Field>
+          </div>
+        ))}
+        <button onClick={addProject}
+          className="text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 transition-colors">
+          + Add Project
+        </button>
       </Section>
 
-      {/* Education */}
-      <Section title="Education">
+      {/* ── Skills ── */}
+      <Section title="Skills" icon="⚡">
+        <p className="text-xs text-slate-400 mb-2">Comma-separated. AI groups and adds missing key skills.</p>
+        <textarea value={formData.rawSkills} onChange={e => setFormData({ rawSkills: e.target.value })}
+          placeholder="React, Node.js, Python, MySQL, Git, communication, problem solving"
+          rows={2} className={textarea} />
+      </Section>
+
+      {/* ── Education ── */}
+      <Section title="Education" icon="🎓">
         {formData.education.map((edu, idx) => (
-          <div key={edu.id} className="border border-gray-700 rounded-lg p-3 mb-3 bg-gray-800/40">
+          <div key={edu.id} className="border border-slate-200 rounded-xl p-3 mb-3 bg-slate-50">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-xs font-semibold text-gray-400">Education #{idx + 1}</span>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Education #{idx + 1}</span>
               {formData.education.length > 1 && (
-                <button onClick={() => removeEducation(edu.id)} className="text-red-400 hover:text-red-300 text-xs">
-                  Remove
-                </button>
+                <button onClick={() => removeEducation(edu.id)}
+                  className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors">Remove</button>
               )}
             </div>
             <div className="grid grid-cols-3 gap-2">
@@ -137,51 +173,51 @@ export default function ClientForm() {
             </div>
           </div>
         ))}
-        <button onClick={addEducation} className="text-blue-400 hover:text-blue-300 text-sm font-medium">
+        <button onClick={addEducation}
+          className="text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center gap-1 transition-colors">
           + Add Education
         </button>
       </Section>
 
-      {/* Certifications */}
-      <Section title="Certifications (optional)">
-        <p className="text-xs text-gray-400 mb-2">One per line.</p>
-        <textarea
-          value={formData.certifications}
-          onChange={e => setFormData({ certifications: e.target.value })}
-          placeholder="AWS Cloud Practitioner — 2023&#10;Google Analytics Certified — 2022"
-          rows={2}
-          className={textarea}
-        />
+      {/* ── Certifications ── */}
+      <Section title="Certifications" icon="🏅">
+        <p className="text-xs text-slate-400 mb-2">One per line.</p>
+        <textarea value={formData.certifications} onChange={e => setFormData({ certifications: e.target.value })}
+          placeholder={"AWS Cloud Practitioner — 2023\nGoogle Analytics Certified — 2022"}
+          rows={2} className={textarea} />
       </Section>
 
-      {/* Job Description */}
-      <Section title="Job Description (optional — for keyword matching)">
-        <p className="text-xs text-gray-400 mb-2">Paste the job posting. AI extracts keywords and injects them into the resume.</p>
-        <textarea
-          value={formData.jobDescription}
-          onChange={e => setFormData({ jobDescription: e.target.value })}
-          placeholder="Paste full job description here..."
-          rows={4}
-          className={textarea}
-        />
+      {/* ── Job Description ── */}
+      <Section title="Job Description" icon="🎯">
+        <p className="text-xs text-slate-400 mb-2">Paste the job posting — AI extracts keywords and injects them.</p>
+        <textarea value={formData.jobDescription} onChange={e => setFormData({ jobDescription: e.target.value })}
+          placeholder="Paste full job description here…"
+          rows={4} className={textarea} />
       </Section>
     </div>
   )
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// ── Shared styles ──────────────────────────────────────────────────────────────
 
-const input = 'w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-1.5 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors'
-const textarea = 'w-full bg-gray-900 border border-gray-700 rounded-md px-3 py-2 text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors resize-none'
+const input = 'w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all'
+const textarea = 'w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none'
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, icon, badge, children }: {
+  title: string; icon: string; badge?: string; children: React.ReactNode
+}) {
   return (
-    <div>
-      <h3 className="text-sm font-semibold text-gray-300 mb-3 flex items-center gap-2">
-        <span className="w-1 h-4 bg-blue-500 rounded-full inline-block" />
-        {title}
-      </h3>
-      {children}
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100 bg-slate-50/60">
+        <span className="text-base">{icon}</span>
+        <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
+        {badge && (
+          <span className="ml-auto text-[10px] font-semibold bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-wide">
+            {badge}
+          </span>
+        )}
+      </div>
+      <div className="p-4">{children}</div>
     </div>
   )
 }
@@ -189,7 +225,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="block text-xs text-gray-500 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-slate-500 mb-1">{label}</label>
       {children}
     </div>
   )

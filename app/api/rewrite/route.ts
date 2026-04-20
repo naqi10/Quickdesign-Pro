@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ClientFormData, ResumeData } from '@/lib/types'
 import { getKeywordsForRole } from '@/lib/keywords'
-import { summaryPrompt, experiencePrompt, skillsPrompt, jdKeywordPrompt } from '@/lib/prompts'
+import { summaryPrompt, experiencePrompt, skillsPrompt, projectPrompt, jdKeywordPrompt } from '@/lib/prompts'
 import { buildFallbackResume } from '@/lib/fallback'
 import { callAI, stripFences, aiConfig } from '@/lib/ai'
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { jobTitle, jobDescription, experiences } = formData
+    const { jobTitle, jobDescription, experiences, projects = [] } = formData
 
     // Step 1: Get base keywords from dictionary
     let keywords = getKeywordsForRole(jobTitle)
@@ -55,13 +55,19 @@ export async function POST(req: NextRequest) {
       keywords = [...new Set([...jdKeywords, ...keywords])]
     }
 
+    // Active projects (have a name or description)
+    const activeProjects = projects.filter(p => p.name.trim() || p.description.trim())
+
     // Step 3: Run all AI rewrites in PARALLEL for speed
-    // Higher token budgets (800/1000) prevent truncation on rich 2-page source content
-    const [summaryRaw, skillsRaw, ...experiencesRaw] = await Promise.all([
+    const [summaryRaw, skillsRaw, ...restRaw] = await Promise.all([
       callAI(summaryPrompt(formData.rawSummary, jobTitle, keywords), 3, 800),
       callAI(skillsPrompt(formData.rawSkills, jobTitle, keywords), 3, 800),
       ...experiences.map(exp => callAI(experiencePrompt(exp, jobTitle, keywords), 3, 1000)),
+      ...activeProjects.map(p => callAI(projectPrompt(p, jobTitle), 3, 600)),
     ])
+
+    const experiencesRaw = restRaw.slice(0, experiences.length)
+    const projectsRaw    = restRaw.slice(experiences.length)
 
     // Step 4: Parse skills (with self-heal on bad JSON)
     const skills = await safeParseJSONWithHeal<Record<string, string[]>>(
@@ -76,6 +82,16 @@ export async function POST(req: NextRequest) {
         role: exp.role,
         duration: exp.duration,
         bullets: await safeParseJSONWithHeal<string[]>(experiencesRaw[i], [exp.rawDuties]),
+      }))
+    )
+
+    // Step 5b: Parse project bullets
+    const processedProjects = await Promise.all(
+      activeProjects.map(async (p, i) => ({
+        name: p.name,
+        link: p.link ?? '',
+        techStack: p.techStack.split(',').map(t => t.trim()).filter(Boolean),
+        bullets: await safeParseJSONWithHeal<string[]>(projectsRaw[i], [p.description]),
       }))
     )
 
@@ -94,6 +110,7 @@ export async function POST(req: NextRequest) {
       jobTitle,
       summary: summaryRaw,
       experience: processedExperiences,
+      projects: processedProjects,
       skills,
       education: formData.education,
       certifications,
