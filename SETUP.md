@@ -1,4 +1,5 @@
 # Setup Guide
+> See AGENTS.md or open an issue for help.
 
 ## Prerequisites
 - Node.js 20+
@@ -101,3 +102,4 @@ Visit http://localhost:3000 → you'll be redirected to `/signin`.
 - [ ] `DATABASE_URL` uses pooled connection (not direct) — Neon's pooler handles serverless concurrency
 - [ ] `OPENAI_API_KEY` has a usage limit set in OpenAI dashboard
 - [ ] Run `npm run db:migrate deploy` on first prod deploy
+
