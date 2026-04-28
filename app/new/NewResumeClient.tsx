@@ -7,6 +7,7 @@ import ClientForm from '@/components/ClientForm'
 import TemplateGallery from '@/components/TemplateGallery'
 import ResumePreview, { getResumeHTML } from '@/components/ResumePreview'
 import PagePreviewModal from '@/components/PagePreviewModal'
+import RerollBar from '@/components/RerollBar'
 import { ResumeData, SavedResume } from '@/lib/types'
 
 const REWRITE_STEPS = [
@@ -541,6 +542,9 @@ export default function NewResumeClient() {
                   className="text-xs text-slate-400 hover:text-slate-700 px-1.5">Reset</button>
               </div>
             </div>
+
+            {/* AI Re-roll bar — per-section regenerate buttons */}
+            <RerollBar />
 
             {/* Scrollable A4 preview area */}
             <div className="flex-1 overflow-y-auto overflow-x-hidden py-6 px-4" ref={previewContainerRef}>

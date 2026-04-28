@@ -1,19 +1,32 @@
 import Link from 'next/link'
-import { getAllResumes } from '@/lib/storage'
+import { redirect } from 'next/navigation'
+import { auth, signOut } from '@/auth'
+import { prisma } from '@/lib/prisma'
 import { SavedResume } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
 
-async function getResumes(): Promise<SavedResume[]> {
-  try {
-    return getAllResumes()
-  } catch {
-    return []
-  }
+async function getUserResumes(userId: string): Promise<SavedResume[]> {
+  const rows = await prisma.resume.findMany({
+    where: { userId },
+    orderBy: { createdAt: 'desc' },
+    take: 100,
+  })
+  return rows.map(r => ({
+    id: r.id,
+    clientName: r.clientName,
+    jobTitle: r.jobTitle,
+    createdAt: r.createdAt.toISOString(),
+    resumeData: r.data as unknown as SavedResume['resumeData'],
+  }))
 }
 
 export default async function DashboardPage() {
-  const resumes = await getResumes()
+  const session = await auth()
+  if (!session?.user?.id) redirect('/signin')
+
+  const resumes = await getUserResumes(session.user.id)
+  const userLabel = session.user.name || session.user.email || 'You'
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -21,14 +34,17 @@ export default async function DashboardPage() {
       <div className="border-b border-slate-200 bg-white px-8 py-4 flex items-center justify-between shadow-sm">
         <div>
           <h1 className="text-xl font-bold text-slate-800">Resume Generator</h1>
-          <p className="text-xs text-slate-400">Internal tool · AI-powered</p>
+          <p className="text-xs text-slate-400">AI-powered · Professional templates</p>
         </div>
-        <Link
-          href="/new"
-          className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
-        >
-          + New Resume
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/new"
+            className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+          >
+            + New Resume
+          </Link>
+          <UserMenu label={userLabel} image={session.user.image ?? undefined} />
+        </div>
       </div>
 
       <div className="px-8 py-8 max-w-5xl mx-auto">
@@ -48,7 +64,7 @@ export default async function DashboardPage() {
         {/* Recent resumes */}
         <div>
           <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
-            Recent Resumes
+            Your Resumes
           </h2>
 
           {resumes.length === 0 ? (
@@ -99,5 +115,32 @@ function ResumeCard({ resume }: { resume: SavedResume }) {
         </Link>
       </div>
     </div>
+  )
+}
+
+function UserMenu({ label, image }: { label: string; image?: string }) {
+  return (
+    <form action={async () => {
+      'use server'
+      await signOut({ redirectTo: '/signin' })
+    }}>
+      <div className="flex items-center gap-2">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={image} alt={label} className="w-8 h-8 rounded-full border border-slate-200" />
+        ) : (
+          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
+            {label.slice(0, 1).toUpperCase()}
+          </div>
+        )}
+        <span className="text-xs text-slate-600 hidden sm:inline max-w-[140px] truncate">{label}</span>
+        <button
+          type="submit"
+          className="text-xs text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 px-2.5 py-1 rounded-md transition-colors"
+        >
+          Sign out
+        </button>
+      </div>
+    </form>
   )
 }

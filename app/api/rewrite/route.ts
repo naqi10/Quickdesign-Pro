@@ -3,7 +3,7 @@ import { ClientFormData, ResumeData } from '@/lib/types'
 import { getKeywordsForRole } from '@/lib/keywords'
 import { summaryPrompt, experiencePrompt, skillsPrompt, projectPrompt, jdKeywordPrompt } from '@/lib/prompts'
 import { buildFallbackResume } from '@/lib/fallback'
-import { callAI, stripFences, aiConfig } from '@/lib/ai'
+import { callAI, stripFences, aiConfig, pLimitAll } from '@/lib/ai'
 
 function safeParseJSON<T>(raw: string, fallback: T): T {
   try {
@@ -58,13 +58,17 @@ export async function POST(req: NextRequest) {
     // Active projects (have a name or description)
     const activeProjects = projects.filter(p => p.name.trim() || p.description.trim())
 
-    // Step 3: Run all AI rewrites in PARALLEL for speed
-    const [summaryRaw, skillsRaw, ...restRaw] = await Promise.all([
-      callAI(summaryPrompt(formData.rawSummary, jobTitle, keywords), 3, 800),
-      callAI(skillsPrompt(formData.rawSkills, jobTitle, keywords), 3, 800),
-      ...experiences.map(exp => callAI(experiencePrompt(exp, jobTitle, keywords), 3, 1000)),
-      ...activeProjects.map(p => callAI(projectPrompt(p, jobTitle), 3, 600)),
-    ])
+    // Step 3: Run all AI rewrites with bounded concurrency.
+    // Free-tier providers (Groq) throttle by tokens-per-minute — pure parallel
+    // hits the limit on resumes with 3+ experiences. pLimitAll caps in-flight
+    // calls (default 2) so we stay under the TPM ceiling.
+    const tasks: Array<() => Promise<string>> = [
+      () => callAI(summaryPrompt(formData.rawSummary, jobTitle, keywords), 3, 800),
+      () => callAI(skillsPrompt(formData.rawSkills, jobTitle, keywords), 3, 800),
+      ...experiences.map(exp => () => callAI(experiencePrompt(exp, jobTitle, keywords), 3, 1000)),
+      ...activeProjects.map(p => () => callAI(projectPrompt(p, jobTitle), 3, 600)),
+    ]
+    const [summaryRaw, skillsRaw, ...restRaw] = await pLimitAll(tasks)
 
     const experiencesRaw = restRaw.slice(0, experiences.length)
     const projectsRaw    = restRaw.slice(experiences.length)
