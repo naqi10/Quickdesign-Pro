@@ -42,6 +42,10 @@ interface ResumeStore {
   resumeData: ResumeData | null
   setResumeData: (data: ResumeData) => void
   updateResumeField: (path: string, value: string) => void
+  updateSummary: (summary: string) => void
+  updateSkills: (skills: Record<string, string[]>) => void
+  updateExperienceBullets: (index: number, bullets: string[]) => void
+  updateProjectBullets: (index: number, bullets: string[]) => void
 
   isRewriting: boolean
   setIsRewriting: (v: boolean) => void
@@ -102,6 +106,26 @@ export const useResumeStore = create<ResumeStore>()(
           return { resumeData: updated }
         })
       },
+
+      updateSummary: (summary) => set(s =>
+        s.resumeData ? { resumeData: { ...s.resumeData, summary } } : {}
+      ),
+
+      updateSkills: (skills) => set(s =>
+        s.resumeData ? { resumeData: { ...s.resumeData, skills } } : {}
+      ),
+
+      updateExperienceBullets: (index, bullets) => set(s => {
+        if (!s.resumeData) return {}
+        const exp = s.resumeData.experience.map((e, i) => i === index ? { ...e, bullets } : e)
+        return { resumeData: { ...s.resumeData, experience: exp } }
+      }),
+
+      updateProjectBullets: (index, bullets) => set(s => {
+        if (!s.resumeData) return {}
+        const projects = s.resumeData.projects.map((p, i) => i === index ? { ...p, bullets } : p)
+        return { resumeData: { ...s.resumeData, projects } }
+      }),
 
       setIsRewriting: (v) => set({ isRewriting: v }),
       setRewriteStatus: (s) => set({ rewriteStatus: s }),
