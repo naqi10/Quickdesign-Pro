@@ -12,6 +12,7 @@ import ResumeScorePanel from '@/components/ResumeScorePanel'
 import JdMatchPanel from '@/components/JdMatchPanel'
 import SaveIndicator from '@/components/SaveIndicator'
 import OnboardingTour from '@/components/OnboardingTour'
+import ShortcutsHelp from '@/components/ShortcutsHelp'
 import { SAMPLE_FORM_DATA } from '@/lib/sampleData'
 import CoverLetterPanel from '@/components/CoverLetterPanel'
 import { ResumeData, SavedResume } from '@/lib/types'
@@ -289,8 +290,9 @@ export default function NewResumeClient() {
             </div>
           )}
 
-          {/* New Resume / confirm */}
-          <div className="ml-auto flex items-center">
+          {/* Shortcuts help + New Resume / confirm */}
+          <div className="ml-auto flex items-center gap-2">
+            <ShortcutsHelp />
             {showClearConfirm ? (
               <div className="flex items-center gap-2 bg-white border border-red-200 rounded-lg px-3 py-1.5 shadow-sm">
                 <span className="text-xs text-slate-700">Clear everything?</span>
