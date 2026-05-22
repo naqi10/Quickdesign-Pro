@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { htmlToPdf } from '@/lib/pdf'
 
+// Chromium needs the Node.js runtime (not Edge) and more time than the
+// 10s default — PDF rendering of multi-page resumes can take 15–25s.
+export const runtime = 'nodejs'
+export const maxDuration = 60
+
 export async function POST(req: NextRequest) {
   try {
     const { html, filename } = await req.json()
