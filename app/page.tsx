@@ -4,6 +4,7 @@ import { auth, signOut } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { SavedResume } from '@/lib/types'
 import ResumeCardActions from '@/components/ResumeCardActions'
+import ThemeToggle from '@/components/ThemeToggle'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,14 +31,15 @@ export default async function DashboardPage() {
   const userLabel = session.user.name || session.user.email || 'You'
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors">
       {/* Header */}
-      <div className="border-b border-slate-200 bg-white px-8 py-4 flex items-center justify-between shadow-sm">
+      <div className="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-8 py-4 flex items-center justify-between shadow-sm">
         <div>
-          <h1 className="text-xl font-bold text-slate-800">Resume Generator</h1>
-          <p className="text-xs text-slate-400">AI-powered · Professional templates</p>
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">Resume Generator</h1>
+          <p className="text-xs text-slate-400 dark:text-slate-500">AI-powered · Professional templates</p>
         </div>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <Link
             href="/new"
             className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
@@ -64,15 +66,15 @@ export default async function DashboardPage() {
 
         {/* Recent resumes */}
         <div>
-          <h2 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-4">
+          <h2 className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
             Your Resumes
           </h2>
 
           {resumes.length === 0 ? (
-            <div className="border border-slate-200 bg-white rounded-xl p-12 text-center shadow-sm">
+            <div className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl p-12 text-center shadow-sm">
               <div className="text-4xl mb-3">📄</div>
-              <p className="text-slate-500 mb-1">No resumes yet</p>
-              <p className="text-slate-400 text-sm">Click &ldquo;New Resume&rdquo; to generate your first one</p>
+              <p className="text-slate-500 dark:text-slate-400 mb-1">No resumes yet</p>
+              <p className="text-slate-400 dark:text-slate-500 text-sm">Click &ldquo;New Resume&rdquo; to generate your first one</p>
             </div>
           ) : (
             <div className="space-y-2">
@@ -89,9 +91,9 @@ export default async function DashboardPage() {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-      <p className="text-2xl font-bold text-slate-800 mb-1">{value}</p>
-      <p className="text-xs text-slate-500">{label}</p>
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 shadow-sm">
+      <p className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-1">{value}</p>
+      <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
     </div>
   )
 }
@@ -102,10 +104,10 @@ function ResumeCard({ resume }: { resume: SavedResume }) {
   })
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg px-5 py-4 flex items-center justify-between hover:border-blue-300 hover:shadow-sm transition-all">
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-5 py-4 flex items-center justify-between hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all">
       <div>
-        <p className="font-medium text-slate-800">{resume.clientName}</p>
-        <p className="text-sm text-slate-500">{resume.jobTitle} · {date}</p>
+        <p className="font-medium text-slate-800 dark:text-slate-100">{resume.clientName}</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">{resume.jobTitle} · {date}</p>
       </div>
       <ResumeCardActions resume={resume} />
     </div>
@@ -127,10 +129,10 @@ function UserMenu({ label, image }: { label: string; image?: string }) {
             {label.slice(0, 1).toUpperCase()}
           </div>
         )}
-        <span className="text-xs text-slate-600 hidden sm:inline max-w-[140px] truncate">{label}</span>
+        <span className="text-xs text-slate-600 dark:text-slate-300 hidden sm:inline max-w-[140px] truncate">{label}</span>
         <button
           type="submit"
-          className="text-xs text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 px-2.5 py-1 rounded-md transition-colors"
+          className="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 px-2.5 py-1 rounded-md transition-colors"
         >
           Sign out
         </button>
