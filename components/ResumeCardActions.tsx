@@ -51,7 +51,7 @@ export default function ResumeCardActions({ resume }: { resume: SavedResume }) {
   if (confirming) {
     return (
       <div className="flex items-center gap-1.5">
-        <span className="text-xs text-slate-600">Delete?</span>
+        <span className="text-xs text-slate-600 dark:text-slate-300">Delete?</span>
         <button
           onClick={remove}
           disabled={working}
@@ -62,7 +62,7 @@ export default function ResumeCardActions({ resume }: { resume: SavedResume }) {
         <button
           onClick={() => setConfirming(false)}
           disabled={working}
-          className="text-xs text-slate-500 hover:text-slate-700 px-2 py-1"
+          className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 px-2 py-1"
         >
           Cancel
         </button>
@@ -74,14 +74,14 @@ export default function ResumeCardActions({ resume }: { resume: SavedResume }) {
     <div className="flex gap-2 items-center">
       <a
         href={`/new?load=${resume.id}`}
-        className="text-xs text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors"
+        className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 border border-blue-200 dark:border-blue-900 hover:border-blue-400 bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors"
       >
         Open & Edit
       </a>
       <button
         onClick={duplicate}
         disabled={working}
-        className="text-xs text-slate-600 hover:text-slate-800 border border-slate-200 hover:border-slate-400 hover:bg-slate-50 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+        className="text-xs text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 border border-slate-200 dark:border-slate-700 hover:border-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
         title="Duplicate this resume to tailor it for another job"
       >
         {busy === 'dup' ? 'Copying…' : 'Duplicate'}
@@ -89,7 +89,7 @@ export default function ResumeCardActions({ resume }: { resume: SavedResume }) {
       <button
         onClick={() => setConfirming(true)}
         disabled={working}
-        className="text-xs text-slate-500 hover:text-red-600 border border-slate-200 hover:border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
+        className="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 px-3 py-1.5 rounded-md transition-colors disabled:opacity-50"
         title="Delete resume"
       >
         Delete
