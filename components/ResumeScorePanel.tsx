@@ -17,7 +17,7 @@ export default function ResumeScorePanel() {
   const issues = checks.filter(c => c.status !== 'pass')
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden flex-shrink-0">
       {/* Header — score ring + grade */}
       <button
         onClick={() => setOpen(o => !o)}
