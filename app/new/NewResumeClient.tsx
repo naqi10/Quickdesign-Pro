@@ -12,6 +12,7 @@ import ResumeScorePanel from '@/components/ResumeScorePanel'
 import JdMatchPanel from '@/components/JdMatchPanel'
 import SaveIndicator from '@/components/SaveIndicator'
 import OnboardingTour from '@/components/OnboardingTour'
+import { SAMPLE_FORM_DATA } from '@/lib/sampleData'
 import CoverLetterPanel from '@/components/CoverLetterPanel'
 import { ResumeData, SavedResume } from '@/lib/types'
 
@@ -39,7 +40,7 @@ export default function NewResumeClient() {
   const {
     formData, resumeData, selectedTemplate,
     setResumeData, setIsRewriting, setRewriteStatus,
-    isRewriting, reset, _hasHydrated,
+    isRewriting, reset, _hasHydrated, replaceFormData,
     savedResumeId, setSavedResumeId, lastSavedAt, setLastSavedAt,
   } = useResumeStore()
 
@@ -391,6 +392,15 @@ export default function NewResumeClient() {
                   <button onClick={() => setWizardStep(3)}
                     className="text-xs text-blue-600 hover:text-blue-700 font-medium border border-blue-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-all">
                     Next: AI Rewrite →
+                  </button>
+                </div>
+                {/* Try with sample data — fills the form with a realistic example */}
+                <div className="px-4 pt-3 bg-slate-50">
+                  <button
+                    onClick={() => replaceFormData(SAMPLE_FORM_DATA)}
+                    className="w-full flex items-center justify-center gap-2 text-xs font-medium text-violet-700 border border-violet-200 hover:border-violet-400 bg-violet-50 hover:bg-violet-100 px-3 py-2 rounded-lg transition-all"
+                  >
+                    ✨ Try with sample data
                   </button>
                 </div>
                 <div className="p-4 bg-slate-50">
