@@ -9,6 +9,7 @@ import ResumePreview, { getResumeHTML } from '@/components/ResumePreview'
 import PagePreviewModal from '@/components/PagePreviewModal'
 import RerollBar from '@/components/RerollBar'
 import ResumeScorePanel from '@/components/ResumeScorePanel'
+import JdMatchPanel from '@/components/JdMatchPanel'
 import { ResumeData, SavedResume } from '@/lib/types'
 
 const REWRITE_STEPS = [
@@ -448,6 +449,9 @@ export default function NewResumeClient() {
 
                 {/* Resume strength meter */}
                 <ResumeScorePanel />
+
+                {/* Job-description keyword match */}
+                <JdMatchPanel />
 
                 {/* Preview button */}
                 <button
