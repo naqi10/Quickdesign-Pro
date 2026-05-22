@@ -2,18 +2,13 @@
 import { useResumeStore } from '@/store/resumeStore'
 import { TEMPLATE_COMPONENTS } from '@/templates'
 import { renderToStaticMarkup } from 'react-dom/server'
+import ResumeSkeleton from '@/components/ResumeSkeleton'
 
 export default function ResumePreview() {
   const { resumeData, selectedTemplate, isRewriting, rewriteStatus, updateResumeField } = useResumeStore()
 
   if (isRewriting) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center">
-        <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-gray-300 font-medium">{rewriteStatus || 'Running AI rewrite...'}</p>
-        <p className="text-gray-500 text-sm mt-1">This takes about 10–15 seconds</p>
-      </div>
-    )
+    return <ResumeSkeleton status={rewriteStatus || 'Running AI rewrite…'} />
   }
 
   if (!resumeData) {
