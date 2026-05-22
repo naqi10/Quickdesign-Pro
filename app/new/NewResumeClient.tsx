@@ -11,6 +11,7 @@ import RerollBar from '@/components/RerollBar'
 import ResumeScorePanel from '@/components/ResumeScorePanel'
 import JdMatchPanel from '@/components/JdMatchPanel'
 import SaveIndicator from '@/components/SaveIndicator'
+import OnboardingTour from '@/components/OnboardingTour'
 import CoverLetterPanel from '@/components/CoverLetterPanel'
 import { ResumeData, SavedResume } from '@/lib/types'
 
@@ -240,6 +241,9 @@ export default function NewResumeClient() {
 
   return (
     <>
+      {/* First-visit onboarding tour */}
+      <OnboardingTour />
+
       {showPreview && resumeData && (
         <PagePreviewModal
           resumeData={{ ...resumeData, templateId: selectedTemplate }}
