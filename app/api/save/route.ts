@@ -12,17 +12,29 @@ export async function POST(req: NextRequest) {
 
   if (!body?.resumeData?.name) return NextResponse.json({ error: 'Missing resume data' }, { status: 400 })
 
-  await prisma.resume.create({
-    data: {
-      userId: session.user.id,
-      clientName: body.clientName ?? body.resumeData.name,
-      jobTitle: body.jobTitle ?? body.resumeData.jobTitle ?? '',
-      templateId: body.resumeData.templateId ?? 'classic',
-      data: body.resumeData as object,
-    },
+  const payload = {
+    clientName: body.clientName ?? body.resumeData.name,
+    jobTitle: body.jobTitle ?? body.resumeData.jobTitle ?? '',
+    templateId: body.resumeData.templateId ?? 'classic',
+    data: body.resumeData as object,
+  }
+
+  // If a valid id is supplied and owned by this user, UPDATE that row
+  // (so auto-save edits the same record instead of creating duplicates).
+  if (body.id) {
+    const updated = await prisma.resume.updateMany({
+      where: { id: body.id, userId: session.user.id },
+      data: payload,
+    })
+    if (updated.count > 0) return NextResponse.json({ ok: true, id: body.id })
+  }
+
+  // Otherwise create a new row and return its id so the client can track it.
+  const created = await prisma.resume.create({
+    data: { userId: session.user.id, ...payload },
   })
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, id: created.id })
 }
 
 export async function GET() {

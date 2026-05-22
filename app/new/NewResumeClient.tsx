@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useResumeStore } from '@/store/resumeStore'
@@ -10,6 +10,7 @@ import PagePreviewModal from '@/components/PagePreviewModal'
 import RerollBar from '@/components/RerollBar'
 import ResumeScorePanel from '@/components/ResumeScorePanel'
 import JdMatchPanel from '@/components/JdMatchPanel'
+import SaveIndicator from '@/components/SaveIndicator'
 import CoverLetterPanel from '@/components/CoverLetterPanel'
 import { ResumeData, SavedResume } from '@/lib/types'
 
@@ -38,7 +39,10 @@ export default function NewResumeClient() {
     formData, resumeData, selectedTemplate,
     setResumeData, setIsRewriting, setRewriteStatus,
     isRewriting, reset, _hasHydrated,
+    savedResumeId, setSavedResumeId, lastSavedAt, setLastSavedAt,
   } = useResumeStore()
+
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>('idle')
 
   const [wizardStep, setWizardStep] = useState<WizardStep>(1)
   const [showPreview, setShowPreview] = useState(false)
@@ -99,9 +103,58 @@ export default function NewResumeClient() {
       })
       .then(payload => {
         const found = payload?.resumes?.find((r: SavedResume) => r.id === loadId)
-        if (found) { setResumeData(found.resumeData); setWizardStep(4) }
+        if (found) {
+          setResumeData(found.resumeData)
+          setSavedResumeId(found.id)        // edits update this same DB row
+          setLastSavedAt(new Date(found.createdAt).getTime())
+          snapshotRef.current = JSON.stringify(found.resumeData)
+          setWizardStep(4)
+        }
       })
-  }, [loadId, setResumeData])
+  }, [loadId, setResumeData, setSavedResumeId, setLastSavedAt])
+
+  // ── Centralised save: create on first call, update the same row after ──────
+  const saveResume = useCallback(async (data: ResumeData): Promise<boolean> => {
+    setSaveState('saving')
+    try {
+      const res = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: savedResumeId,                // null → create; real id → update
+          clientName: data.name,
+          jobTitle: data.jobTitle,
+          resumeData: data,
+        }),
+      })
+      if (!res.ok) { setSaveState('idle'); return false }
+      const { id } = JSON.parse(await res.text()) as { id?: string }
+      if (id && id !== savedResumeId) setSavedResumeId(id)
+      setLastSavedAt(Date.now())
+      setSaveState('saved')
+      return true
+    } catch {
+      setSaveState('idle')
+      return false
+    }
+  }, [savedResumeId, setSavedResumeId, setLastSavedAt])
+
+  // Snapshot of the last-saved resume JSON — guards the debounced auto-save
+  // against firing on hydration or on no-op renders.
+  const snapshotRef = useRef<string | null>(null)
+
+  // Debounced auto-save whenever the resume content actually changes.
+  useEffect(() => {
+    if (!_hasHydrated || !resumeData) return
+    const current = JSON.stringify(resumeData)
+    if (snapshotRef.current === null) { snapshotRef.current = current; return }
+    if (current === snapshotRef.current) return
+    const t = setTimeout(() => {
+      snapshotRef.current = current
+      void saveResume(resumeData)
+    }, 1500)
+    return () => clearTimeout(t)
+  }, [resumeData, _hasHydrated, saveResume])
 
   async function runRewrite() {
     if (!formData.name || !formData.jobTitle) {
@@ -126,21 +179,12 @@ export default function NewResumeClient() {
       if (!payloadText) throw new Error('Empty response')
       const { resumeData: newData, warning } = JSON.parse(payloadText) as { resumeData: ResumeData; warning?: string }
       const finalData = { ...newData, templateId: selectedTemplate }
+      // Prime the snapshot so the debounced effect doesn't double-save this.
+      snapshotRef.current = JSON.stringify(finalData)
       setResumeData(finalData)
       if (warning) alert(`Note: ${warning}`)
-      // Auto-save to history
-      const record: SavedResume = {
-        id: `${Date.now()}`,
-        clientName: finalData.name,
-        jobTitle: finalData.jobTitle,
-        createdAt: new Date().toISOString(),
-        resumeData: finalData,
-      }
-      await fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(record),
-      })
+      // Auto-save to history (creates a new row, captures its id)
+      await saveResume(finalData)
       setSaved(true)
     } catch (err) {
       alert(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`)
@@ -174,19 +218,10 @@ export default function NewResumeClient() {
 
   async function saveToHistory() {
     if (!resumeData) return
-    const record: SavedResume = {
-      id: `${Date.now()}`,
-      clientName: resumeData.name,
-      jobTitle: resumeData.jobTitle,
-      createdAt: new Date().toISOString(),
-      resumeData: { ...resumeData, templateId: selectedTemplate },
-    }
-    await fetch('/api/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(record),
-    })
-    setSaved(true)
+    const data = { ...resumeData, templateId: selectedTemplate }
+    snapshotRef.current = JSON.stringify(data)
+    const ok = await saveResume(data)
+    if (ok) setSaved(true)
   }
 
   const hasResume = !!resumeData && !isRewriting
@@ -239,6 +274,13 @@ export default function NewResumeClient() {
             <div className="flex items-center gap-2 ml-1">
               <span className="w-3 h-3 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
               <span className="text-xs text-blue-600 font-medium">{REWRITE_STEPS[stepIdx]}</span>
+            </div>
+          )}
+
+          {/* Auto-save indicator */}
+          {!isRewriting && resumeData && (
+            <div className="ml-1">
+              <SaveIndicator state={saveState} lastSavedAt={lastSavedAt} />
             </div>
           )}
 

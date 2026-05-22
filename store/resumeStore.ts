@@ -47,6 +47,12 @@ interface ResumeStore {
   updateExperienceBullets: (index: number, bullets: string[]) => void
   updateProjectBullets: (index: number, bullets: string[]) => void
 
+  // Auto-save tracking — the DB row this resume maps to + last DB save time.
+  savedResumeId: string | null
+  setSavedResumeId: (id: string | null) => void
+  lastSavedAt: number | null
+  setLastSavedAt: (t: number | null) => void
+
   isRewriting: boolean
   setIsRewriting: (v: boolean) => void
   rewriteStatus: string
@@ -63,6 +69,8 @@ export const useResumeStore = create<ResumeStore>()(
       formData: defaultForm,
       selectedTemplate: 'classic',
       resumeData: null,
+      savedResumeId: null,
+      lastSavedAt: null,
       isRewriting: false,
       rewriteStatus: '',
       _hasHydrated: false,
@@ -127,14 +135,17 @@ export const useResumeStore = create<ResumeStore>()(
         return { resumeData: { ...s.resumeData, projects } }
       }),
 
+      setSavedResumeId: (id) => set({ savedResumeId: id }),
+      setLastSavedAt: (t) => set({ lastSavedAt: t }),
+
       setIsRewriting: (v) => set({ isRewriting: v }),
       setRewriteStatus: (s) => set({ rewriteStatus: s }),
-      reset: () => set({ formData: defaultForm, resumeData: null, selectedTemplate: 'classic' }),
+      reset: () => set({ formData: defaultForm, resumeData: null, selectedTemplate: 'classic', savedResumeId: null, lastSavedAt: null }),
     }),
     {
       name: 'resume-generator-state',
       onRehydrateStorage: () => (state) => { state?._setHasHydrated(true) },
-      partialize: (s) => ({ formData: s.formData, selectedTemplate: s.selectedTemplate, resumeData: s.resumeData }),
+      partialize: (s) => ({ formData: s.formData, selectedTemplate: s.selectedTemplate, resumeData: s.resumeData, savedResumeId: s.savedResumeId, lastSavedAt: s.lastSavedAt }),
     }
   )
 )
