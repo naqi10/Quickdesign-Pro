@@ -139,3 +139,41 @@ Output ONLY a JSON array of keyword strings.
 Example: ["Python", "Agile", "REST APIs", "stakeholder management"]
 No explanations, no markdown, just the raw JSON array.`
 }
+
+/**
+ * Builds a cover-letter prompt from the candidate's processed resume data.
+ */
+export function coverLetterPrompt(opts: {
+  name: string
+  jobTitle: string
+  company: string
+  summary: string
+  topSkills: string[]
+  topAchievements: string[]
+  jobDescription?: string
+}): string {
+  const company = opts.company.trim()
+  const jd = opts.jobDescription?.trim()
+
+  return `You are an expert cover letter writer.
+Write a professional, compelling cover letter for this candidate.
+
+Candidate name: ${opts.name}
+Target role: ${opts.jobTitle}${company ? `\nCompany: ${company}` : ''}
+Professional summary: ${opts.summary || '(none provided)'}
+Key skills: ${opts.topSkills.join(', ') || '(none provided)'}
+Notable achievements:
+${opts.topAchievements.map(a => `- ${a}`).join('\n') || '- (none provided)'}
+${jd ? `\nTailor the letter to this job description:\n"""${jd}"""\n` : ''}
+
+Rules:
+- 3–4 short paragraphs. Professional but warm, confident first-person voice.
+- Opening: name the role${company ? ' and company' : ''} and a strong hook.
+- Middle: connect 2–3 specific achievements/skills to the role's needs.
+- Closing: enthusiasm + a clear call to action.
+- Start with "Dear Hiring Manager," and end with "Sincerely,\n${opts.name}".
+- Use ONLY the real values above. Never output placeholders like [Company] or [Your Name].
+- Do NOT include address blocks or dates.
+
+Output ONLY the cover letter text. No explanations, no markdown.`
+}

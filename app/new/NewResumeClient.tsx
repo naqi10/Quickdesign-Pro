@@ -10,6 +10,7 @@ import PagePreviewModal from '@/components/PagePreviewModal'
 import RerollBar from '@/components/RerollBar'
 import ResumeScorePanel from '@/components/ResumeScorePanel'
 import JdMatchPanel from '@/components/JdMatchPanel'
+import CoverLetterPanel from '@/components/CoverLetterPanel'
 import { ResumeData, SavedResume } from '@/lib/types'
 
 const REWRITE_STEPS = [
@@ -452,6 +453,9 @@ export default function NewResumeClient() {
 
                 {/* Job-description keyword match */}
                 <JdMatchPanel />
+
+                {/* AI cover letter generator */}
+                <CoverLetterPanel />
 
                 {/* Preview button */}
                 <button
