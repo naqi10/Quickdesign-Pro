@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { auth, signOut } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import { SavedResume } from '@/lib/types'
+import ResumeCardActions from '@/components/ResumeCardActions'
 
 export const dynamic = 'force-dynamic'
 
@@ -106,14 +107,7 @@ function ResumeCard({ resume }: { resume: SavedResume }) {
         <p className="font-medium text-slate-800">{resume.clientName}</p>
         <p className="text-sm text-slate-500">{resume.jobTitle} · {date}</p>
       </div>
-      <div className="flex gap-2">
-        <Link
-          href={`/new?load=${resume.id}`}
-          className="text-xs text-blue-600 hover:text-blue-700 border border-blue-200 hover:border-blue-400 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-md transition-colors"
-        >
-          Open & Edit
-        </Link>
-      </div>
+      <ResumeCardActions resume={resume} />
     </div>
   )
 }
