@@ -27,10 +27,12 @@ interface ResumeStore {
   setExperience: (id: string, data: Partial<RawExperience>) => void
   addExperience: () => void
   removeExperience: (id: string) => void
+  moveExperience: (id: string, dir: -1 | 1) => void
 
   setProject: (id: string, data: Partial<RawProject>) => void
   addProject: () => void
   removeProject: (id: string) => void
+  moveProject: (id: string, dir: -1 | 1) => void
 
   setEducation: (id: string, data: Partial<RawEducation>) => void
   addEducation: () => void
@@ -85,6 +87,14 @@ export const useResumeStore = create<ResumeStore>()(
         set(s => ({ formData: { ...s.formData, experiences: [...s.formData.experiences, { id: Date.now().toString(), company: '', role: '', duration: '', rawDuties: '' }] } })),
       removeExperience: (id) =>
         set(s => ({ formData: { ...s.formData, experiences: s.formData.experiences.filter(e => e.id !== id) } })),
+      moveExperience: (id, dir) => set(s => {
+        const arr = [...s.formData.experiences]
+        const i = arr.findIndex(e => e.id === id)
+        const j = i + dir
+        if (i < 0 || j < 0 || j >= arr.length) return {}
+        const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp
+        return { formData: { ...s.formData, experiences: arr } }
+      }),
 
       setProject: (id, data) =>
         set(s => ({ formData: { ...s.formData, projects: (s.formData.projects ?? []).map(p => p.id === id ? { ...p, ...data } : p) } })),
@@ -92,6 +102,14 @@ export const useResumeStore = create<ResumeStore>()(
         set(s => ({ formData: { ...s.formData, projects: [...(s.formData.projects ?? []), { id: Date.now().toString(), name: '', description: '', techStack: '', link: '' }] } })),
       removeProject: (id) =>
         set(s => ({ formData: { ...s.formData, projects: (s.formData.projects ?? []).filter(p => p.id !== id) } })),
+      moveProject: (id, dir) => set(s => {
+        const arr = [...(s.formData.projects ?? [])]
+        const i = arr.findIndex(p => p.id === id)
+        const j = i + dir
+        if (i < 0 || j < 0 || j >= arr.length) return {}
+        const tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp
+        return { formData: { ...s.formData, projects: arr } }
+      }),
 
       setEducation: (id, data) =>
         set(s => ({ formData: { ...s.formData, education: s.formData.education.map(e => e.id === id ? { ...e, ...data } : e) } })),

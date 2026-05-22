@@ -6,8 +6,8 @@ import { ClientFormData } from '@/lib/types'
 export default function ClientForm() {
   const {
     formData, setFormData, replaceFormData,
-    setExperience, addExperience, removeExperience,
-    setProject, addProject, removeProject,
+    setExperience, addExperience, removeExperience, moveExperience,
+    setProject, addProject, removeProject, moveProject,
     setEducation, addEducation, removeEducation,
   } = useResumeStore()
 
@@ -64,10 +64,16 @@ export default function ClientForm() {
           <div key={exp.id} className="border border-slate-200 rounded-xl p-3 mb-3 bg-slate-50">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Experience #{idx + 1}</span>
-              {formData.experiences.length > 1 && (
-                <button onClick={() => removeExperience(exp.id)}
-                  className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors">Remove</button>
-              )}
+              <div className="flex items-center gap-1">
+                <ReorderButtons
+                  count={formData.experiences.length} index={idx}
+                  onMove={dir => moveExperience(exp.id, dir)}
+                />
+                {formData.experiences.length > 1 && (
+                  <button onClick={() => removeExperience(exp.id)}
+                    className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors ml-1">Remove</button>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2 mb-2">
               <Field label="Company">
@@ -106,10 +112,16 @@ export default function ClientForm() {
           <div key={proj.id} className="border border-blue-100 rounded-xl p-3 mb-3 bg-blue-50/40">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Project #{idx + 1}</span>
-              {(formData.projects ?? []).length > 1 && (
-                <button onClick={() => removeProject(proj.id)}
-                  className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors">Remove</button>
-              )}
+              <div className="flex items-center gap-1">
+                <ReorderButtons
+                  count={(formData.projects ?? []).length} index={idx}
+                  onMove={dir => moveProject(proj.id, dir)}
+                />
+                {(formData.projects ?? []).length > 1 && (
+                  <button onClick={() => removeProject(proj.id)}
+                    className="text-xs text-red-400 hover:text-red-600 font-medium transition-colors ml-1">Remove</button>
+                )}
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-2 mb-2">
               <Field label="Project Name">
@@ -228,5 +240,19 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <label className="block text-xs font-medium text-slate-500 mb-1">{label}</label>
       {children}
     </div>
+  )
+}
+
+// Up/Down reorder controls — hidden when there's only one entry.
+function ReorderButtons({ count, index, onMove }: {
+  count: number; index: number; onMove: (dir: -1 | 1) => void
+}) {
+  if (count < 2) return null
+  const btn = 'w-5 h-5 flex items-center justify-center rounded text-slate-400 hover:text-slate-700 hover:bg-slate-200 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors'
+  return (
+    <span className="flex items-center gap-0.5">
+      <button type="button" onClick={() => onMove(-1)} disabled={index === 0} title="Move up" className={btn}>↑</button>
+      <button type="button" onClick={() => onMove(1)} disabled={index === count - 1} title="Move down" className={btn}>↓</button>
+    </span>
   )
 }
