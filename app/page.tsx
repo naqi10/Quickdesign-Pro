@@ -116,27 +116,33 @@ function ResumeCard({ resume }: { resume: SavedResume }) {
 
 function UserMenu({ label, image }: { label: string; image?: string }) {
   return (
-    <form action={async () => {
-      'use server'
-      await signOut({ redirectTo: '/signin' })
-    }}>
-      <div className="flex items-center gap-2">
-        {image ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={image} alt={label} className="w-8 h-8 rounded-full border border-slate-200" />
-        ) : (
-          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
-            {label.slice(0, 1).toUpperCase()}
-          </div>
-        )}
-        <span className="text-xs text-slate-600 dark:text-slate-300 hidden sm:inline max-w-[140px] truncate">{label}</span>
+    <div className="flex items-center gap-2">
+      {image ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={image} alt={label} className="w-8 h-8 rounded-full border border-slate-200" />
+      ) : (
+        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">
+          {label.slice(0, 1).toUpperCase()}
+        </div>
+      )}
+      <span className="text-xs text-slate-600 dark:text-slate-300 hidden sm:inline max-w-[140px] truncate">{label}</span>
+      <Link
+        href="/settings"
+        className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 px-2.5 py-1 rounded-md transition-colors"
+      >
+        Settings
+      </Link>
+      <form action={async () => {
+        'use server'
+        await signOut({ redirectTo: '/signin' })
+      }}>
         <button
           type="submit"
           className="text-xs text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 hover:bg-red-50 dark:hover:bg-red-950 px-2.5 py-1 rounded-md transition-colors"
         >
           Sign out
         </button>
-      </div>
-    </form>
+      </form>
+    </div>
   )
 }
