@@ -25,12 +25,18 @@ model User {
   passwordHash  String?
   // Plan tier — drives feature gating later
   plan          Plan      @default(FREE)
+  // Free credits drawn from the project's API pool. Decrements on each AI
+  // call when the user has NO personal key for the provider. Default 5.
+  freeCreditsRemaining Int @default(5)
+  // Preferred default model for the chat assistant (set in settings).
+  defaultChatModel String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   accounts Account[]
   sessions Session[]
   resumes  Resume[]
+  apiKeys  UserApiKey[]
 }
 
 model Account {
@@ -84,6 +90,27 @@ model Resume {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
+}
+
+// ─── BYO API keys ────────────────────────────────────────────────────────────
+// Per-user, per-provider API keys. encryptedKey is "iv:authTag:ciphertext"
+// (each part base64) — AES-256-GCM with the server-side ENCRYPTION_KEY.
+// Plaintext keys NEVER leave the server.
+
+model UserApiKey {
+  id           String   @id @default(cuid())
+  userId       String
+  // 'google' | 'openai' | 'anthropic' | 'groq' | 'cerebras' | 'deepseek'
+  provider     String
+  encryptedKey String   @db.Text
+  lastUsedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
 }
 
 enum Plan {
