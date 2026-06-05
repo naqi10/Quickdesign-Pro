@@ -1,0 +1,17 @@
+services:
+  coach:
+    build: .
+    image: interview-coach:dev
+    container_name: interview-coach
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Hot-reload Python source during dev
+      - ./src:/app/src
+    # Explicit DNS — bypasses Docker Desktop's internal DNS proxy which often
+    # fails to resolve api.openai.com on Windows hosts.
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
