@@ -41,6 +41,13 @@ export default async function DashboardPage() {
         <div className="flex items-center gap-3">
           <ThemeToggle />
           <Link
+            href="/coach"
+            className="text-sm font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-950 hover:bg-blue-100 dark:hover:bg-blue-900 px-4 py-2 rounded-lg transition-colors"
+            title="Voice interview coach"
+          >
+            🎙 Coach
+          </Link>
+          <Link
             href="/new"
             className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
           >
