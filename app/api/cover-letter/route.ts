@@ -34,13 +34,13 @@ export async function POST(req: NextRequest) {
         topAchievements,
         jobDescription,
       }),
-      3,
-      900
+      { userId: session.user.id, maxRetries: 3, maxTokens: 900 }
     )
     return NextResponse.json({ letter: letter.trim() })
   } catch (err) {
     const status = (err as { status?: number })?.status ?? 500
     const message = err instanceof Error ? err.message : `${aiConfig.providerName} request failed.`
-    return NextResponse.json({ error: message }, { status: status === 429 ? 429 : 500 })
+    const httpStatus = status === 402 ? 402 : status === 429 ? 429 : 500
+    return NextResponse.json({ error: message }, { status: httpStatus })
   }
 }

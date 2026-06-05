@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
 import { ClientFormData, ResumeData } from '@/lib/types'
 import { getKeywordsForRole } from '@/lib/keywords'
 import { summaryPrompt, experiencePrompt, skillsPrompt, projectPrompt, jdKeywordPrompt } from '@/lib/prompts'
@@ -14,7 +15,7 @@ function safeParseJSON<T>(raw: string, fallback: T): T {
   }
 }
 
-async function safeParseJSONWithHeal<T>(raw: string, fallback: T): Promise<T> {
+async function safeParseJSONWithHeal<T>(raw: string, fallback: T, userId: string): Promise<T> {
   const cleaned = stripFences(raw)
   try {
     return JSON.parse(cleaned) as T
@@ -23,7 +24,7 @@ async function safeParseJSONWithHeal<T>(raw: string, fallback: T): Promise<T> {
       console.warn('Attempting AI self-heal on broken JSON...')
       const fixed = await callAI(
         `The following is broken JSON. Fix it and return ONLY valid JSON, nothing else:\n${cleaned}`,
-        1
+        { userId, maxRetries: 1 }
       )
       return JSON.parse(stripFences(fixed)) as T
     } catch {
@@ -34,6 +35,10 @@ async function safeParseJSONWithHeal<T>(raw: string, fallback: T): Promise<T> {
 }
 
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = session.user.id
+
   // Parse body once — cannot call req.json() twice
   let formData: ClientFormData
   try {
@@ -50,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     // Step 2: If JD is provided, extract JD keywords and merge (JD keywords take priority)
     if (jobDescription?.trim()) {
-      const jdRaw = await callAI(jdKeywordPrompt(jobDescription))
+      const jdRaw = await callAI(jdKeywordPrompt(jobDescription), { userId })
       const jdKeywords = safeParseJSON<string[]>(jdRaw, [])
       keywords = [...new Set([...jdKeywords, ...keywords])]
     }
@@ -59,14 +64,11 @@ export async function POST(req: NextRequest) {
     const activeProjects = projects.filter(p => p.name.trim() || p.description.trim())
 
     // Step 3: Run all AI rewrites with bounded concurrency.
-    // Free-tier providers (Groq) throttle by tokens-per-minute — pure parallel
-    // hits the limit on resumes with 3+ experiences. pLimitAll caps in-flight
-    // calls (default 2) so we stay under the TPM ceiling.
     const tasks: Array<() => Promise<string>> = [
-      () => callAI(summaryPrompt(formData.rawSummary, jobTitle, keywords), 3, 800),
-      () => callAI(skillsPrompt(formData.rawSkills, jobTitle, keywords), 3, 800),
-      ...experiences.map(exp => () => callAI(experiencePrompt(exp, jobTitle, keywords), 3, 1000)),
-      ...activeProjects.map(p => () => callAI(projectPrompt(p, jobTitle), 3, 600)),
+      () => callAI(summaryPrompt(formData.rawSummary, jobTitle, keywords), { userId, maxRetries: 3, maxTokens: 800 }),
+      () => callAI(skillsPrompt(formData.rawSkills, jobTitle, keywords), { userId, maxRetries: 3, maxTokens: 800 }),
+      ...experiences.map(exp => () => callAI(experiencePrompt(exp, jobTitle, keywords), { userId, maxRetries: 3, maxTokens: 1000 })),
+      ...activeProjects.map(p => () => callAI(projectPrompt(p, jobTitle), { userId, maxRetries: 3, maxTokens: 600 })),
     ]
     const [summaryRaw, skillsRaw, ...restRaw] = await pLimitAll(tasks)
 
@@ -76,7 +78,8 @@ export async function POST(req: NextRequest) {
     // Step 4: Parse skills (with self-heal on bad JSON)
     const skills = await safeParseJSONWithHeal<Record<string, string[]>>(
       skillsRaw,
-      { 'Core Skills': formData.rawSkills.split(',').map(s => s.trim()).filter(Boolean) }
+      { 'Core Skills': formData.rawSkills.split(',').map(s => s.trim()).filter(Boolean) },
+      userId,
     )
 
     // Step 5: Parse experience bullets (with self-heal on bad JSON)
@@ -85,7 +88,7 @@ export async function POST(req: NextRequest) {
         company: exp.company,
         role: exp.role,
         duration: exp.duration,
-        bullets: await safeParseJSONWithHeal<string[]>(experiencesRaw[i], [exp.rawDuties]),
+        bullets: await safeParseJSONWithHeal<string[]>(experiencesRaw[i], [exp.rawDuties], userId),
       }))
     )
 
@@ -95,7 +98,7 @@ export async function POST(req: NextRequest) {
         name: p.name,
         link: p.link ?? '',
         techStack: p.techStack.split(',').map(t => t.trim()).filter(Boolean),
-        bullets: await safeParseJSONWithHeal<string[]>(projectsRaw[i], [p.description]),
+        bullets: await safeParseJSONWithHeal<string[]>(projectsRaw[i], [p.description], userId),
       }))
     )
 
@@ -138,6 +141,11 @@ export async function POST(req: NextRequest) {
         ? (error as { error: string }).error
         : undefined
 
+    if (apiStatus === 402) {
+      // Credits exhausted + no user key. Show the precise message we threw.
+      const errMessage = error instanceof Error ? error.message : 'Out of credits.'
+      return NextResponse.json({ error: errMessage }, { status: 402 })
+    }
     if (apiStatus === 429) {
       return NextResponse.json(
         { error: `${aiConfig.providerName} quota exceeded. Please add billing/credits and try again.` },

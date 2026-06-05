@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/auth'
 import { ClientFormData } from '@/lib/types'
 import { callAI, stripFences } from '@/lib/ai'
 
@@ -68,6 +69,10 @@ ${raw}
 `
 
 export async function POST(req: NextRequest) {
+  const session = await auth()
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const userId = session.user.id
+
   let raw: string
   try {
     const body = await req.json()
@@ -81,9 +86,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    // Use callAI from lib/ai — same client config as the rewrite route
-    // Keep token budget moderate to fit free-tier limits more reliably.
-    const content = await callAI(PARSE_PROMPT(raw), 3, 2000)
+    // User-aware: routes through user's keys first, then project pool (1 credit).
+    const content = await callAI(PARSE_PROMPT(raw), { userId, maxRetries: 3, maxTokens: 2000 })
     const cleaned = stripFences(content)
 
     let parsed: Partial<ClientFormData>
@@ -131,6 +135,7 @@ export async function POST(req: NextRequest) {
     const msg = err instanceof Error
       ? err.message
       : 'Failed to parse text. Try again.'
-    return NextResponse.json({ error: msg }, { status: status === 429 ? 429 : 500 })
+    const httpStatus = status === 402 ? 402 : status === 429 ? 429 : 500
+    return NextResponse.json({ error: msg }, { status: httpStatus })
   }
 }
