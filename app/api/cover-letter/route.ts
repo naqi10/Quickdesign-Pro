@@ -3,6 +3,7 @@ import { auth } from '@/auth'
 import { callAI, aiConfig } from '@/lib/ai'
 import { coverLetterPrompt } from '@/lib/prompts'
 import { ResumeData } from '@/lib/types'
+import { rateLimitUser } from '@/lib/rateLimit'
 
 interface Body {
   resumeData: ResumeData
@@ -13,6 +14,14 @@ interface Body {
 export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  const rl = await rateLimitUser(session.user.id)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${rl.retryAfterSec ?? 60}s.` },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec ?? 60) } }
+    )
+  }
 
   let body: Body
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Bad JSON' }, { status: 400 }) }
