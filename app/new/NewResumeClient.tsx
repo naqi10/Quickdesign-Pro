@@ -13,6 +13,7 @@ import JdMatchPanel from '@/components/JdMatchPanel'
 import SaveIndicator from '@/components/SaveIndicator'
 import OnboardingTour from '@/components/OnboardingTour'
 import ShortcutsHelp from '@/components/ShortcutsHelp'
+import CreditsIndicator from '@/components/CreditsIndicator'
 import { SAMPLE_FORM_DATA } from '@/lib/sampleData'
 import CoverLetterPanel from '@/components/CoverLetterPanel'
 import { ResumeData, SavedResume } from '@/lib/types'
@@ -289,6 +290,11 @@ export default function NewResumeClient() {
               <SaveIndicator state={saveState} lastSavedAt={lastSavedAt} />
             </div>
           )}
+
+          {/* Free credits balance */}
+          <div className="ml-1">
+            <CreditsIndicator />
+          </div>
 
           {/* Shortcuts help + New Resume / confirm */}
           <div className="ml-auto flex items-center gap-2">
