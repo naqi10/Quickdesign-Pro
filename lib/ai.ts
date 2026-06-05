@@ -19,6 +19,7 @@ import {
   Provider, getUserApiKey, listUserApiKeys, touchUserApiKey,
 } from './userKeys'
 import { getFreeCreditsRemaining, consumeFreeCredits } from './credits'
+import { isProjectPoolAvailable, recordPoolUse } from './rateLimit'
 
 // ─── Provider catalog ────────────────────────────────────────────────────────
 
@@ -249,14 +250,17 @@ export async function callAI(prompt: string, opts: CallAIOpts = {}): Promise<str
   }
 
   const userChain = buildUserChain(userKeys)
-  const canUseProject = PROJECT_CHAIN.length > 0 && credits > 0
+  const poolAvailable = await isProjectPoolAvailable()
+  const canUseProject = PROJECT_CHAIN.length > 0 && credits > 0 && poolAvailable
 
   if (userChain.length === 0 && !canUseProject) {
-    const e = new Error(
-      PROJECT_CHAIN.length > 0
-        ? `You've used all your free credits. Add your own API key in Settings to keep using the app for free, or upgrade.`
-        : 'No AI provider available. Add an API key in Settings.'
-    ) as Error & { status?: number }
+    const message =
+      PROJECT_CHAIN.length === 0
+        ? 'No AI provider available. Add an API key in Settings.'
+        : credits === 0
+          ? `You've used all your free credits. Add your own API key in Settings to keep using the app for free, or upgrade.`
+          : 'The free trial pool is at capacity for today. Add your own API key in Settings to keep using the app.'
+    const e = new Error(message) as Error & { status?: number }
     e.status = 402
     throw e
   }
@@ -267,8 +271,8 @@ export async function callAI(prompt: string, opts: CallAIOpts = {}): Promise<str
   // Accounting — only after success.
   if (provider.source === 'project') {
     // Race-safe: returns null if another concurrent call drained the balance.
-    // We don't block the user this time; the NEXT call will be blocked at start.
     await consumeFreeCredits(userId, 1).catch(() => null)
+    void recordPoolUse().catch(() => null)
   } else if (provider.source === 'user' && ROUTABLE_PROVIDERS.includes(provider.id as Provider)) {
     void touchUserApiKey(userId, provider.id as Provider).catch(() => null)
   }

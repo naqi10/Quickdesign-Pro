@@ -5,6 +5,7 @@ import { getKeywordsForRole } from '@/lib/keywords'
 import { summaryPrompt, experiencePrompt, skillsPrompt, projectPrompt, jdKeywordPrompt } from '@/lib/prompts'
 import { buildFallbackResume } from '@/lib/fallback'
 import { callAI, stripFences, aiConfig, pLimitAll } from '@/lib/ai'
+import { rateLimitUser } from '@/lib/rateLimit'
 
 function safeParseJSON<T>(raw: string, fallback: T): T {
   try {
@@ -38,6 +39,14 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = session.user.id
+
+  const rl = await rateLimitUser(userId)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${rl.retryAfterSec ?? 60}s.` },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec ?? 60) } }
+    )
+  }
 
   // Parse body once — cannot call req.json() twice
   let formData: ClientFormData

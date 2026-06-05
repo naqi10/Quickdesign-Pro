@@ -4,6 +4,7 @@ import { ClientFormData } from '@/lib/types'
 import { getKeywordsForRole } from '@/lib/keywords'
 import { summaryPrompt, experiencePrompt, skillsPrompt, projectPrompt } from '@/lib/prompts'
 import { callAI, stripFences, aiConfig } from '@/lib/ai'
+import { rateLimitUser } from '@/lib/rateLimit'
 
 type Section =
   | { kind: 'summary' }
@@ -35,6 +36,14 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = session.user.id
+
+  const rl = await rateLimitUser(userId)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${rl.retryAfterSec ?? 60}s.` },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec ?? 60) } }
+    )
+  }
 
   let body: RerollBody
   try { body = await req.json() } catch { return NextResponse.json({ error: 'Bad JSON' }, { status: 400 }) }

@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/auth'
 import { ClientFormData } from '@/lib/types'
 import { callAI, stripFences } from '@/lib/ai'
+import { rateLimitUser } from '@/lib/rateLimit'
 
 const PARSE_PROMPT = (raw: string) => `
 You are extracting resume information from a client's raw message (could be WhatsApp text, informal notes, or a rough CV).
@@ -72,6 +73,14 @@ export async function POST(req: NextRequest) {
   const session = await auth()
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const userId = session.user.id
+
+  const rl = await rateLimitUser(userId)
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Too many requests. Try again in ${rl.retryAfterSec ?? 60}s.` },
+      { status: 429, headers: { 'Retry-After': String(rl.retryAfterSec ?? 60) } }
+    )
+  }
 
   let raw: string
   try {
